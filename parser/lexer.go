@@ -238,11 +238,20 @@ func (self *_parser) scan() (tkn token.Token, literal string, idx file.Idx) {
 				tkn = self.switch2(token.MULTIPLY, token.MULTIPLY_ASSIGN)
 			case '/':
 				if self.chr == '/' {
-					self.skipSingleLineComment()
-					continue
+					//self.skipSingleLineComment()
+					runes := self.readSingleLineComment()
+					literal = string(runes)
+					//continue
+					idx = self.idxOf(self.chrOffset)
+					tkn = token.COMMENT
+					return
 				} else if self.chr == '*' {
-					self.skipMultiLineComment()
-					continue
+					//self.skipMultiLineComment()
+					literal = string(self.readMultiLineComment())
+					idx = self.idxOf(self.chrOffset)
+					//continue
+					tkn = token.COMMENT
+					return
 				} else {
 					// Could be division, could be RegExp literal
 					tkn = self.switch2(token.SLASH, token.QUOTIENT_ASSIGN)
@@ -420,6 +429,21 @@ func (self *_parser) skipSingleLineComment() {
 	}
 }
 
+func (self *_parser) readSingleLineComment() (result []rune) {
+	for self.chr != -1 {
+		self.read()
+		if isLineTerminator(self.chr) {
+			return
+		}
+		result = append(result, self.chr)
+	}
+
+	// Get rid of the trailing -1
+	result = result[:len(result)-1]
+
+	return
+}
+
 func (self *_parser) skipMultiLineComment() {
 	self.read()
 	for self.chr >= 0 {
@@ -432,6 +456,24 @@ func (self *_parser) skipMultiLineComment() {
 	}
 
 	self.errorUnexpected(0, self.chr)
+}
+
+func (self *_parser) readMultiLineComment() (result []rune) {
+	self.read()
+	for self.chr >= 0 {
+		chr := self.chr
+		self.read()
+		if chr == '*' && self.chr == '/' {
+			self.read()
+			return
+		}
+
+		result = append(result, chr)
+	}
+
+	self.errorUnexpected(0, self.chr)
+
+	return
 }
 
 func (self *_parser) skipWhiteSpace() {
