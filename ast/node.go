@@ -238,6 +238,11 @@ type (
 		Body      Statement
 	}
 
+	CommentStatement struct {
+		This file.Idx
+		Body string
+	}
+
 	DebuggerStatement struct {
 		Debugger file.Idx
 	}
@@ -333,6 +338,7 @@ func (*BlockStatement) _statementNode()      {}
 func (*BranchStatement) _statementNode()     {}
 func (*CaseStatement) _statementNode()       {}
 func (*CatchStatement) _statementNode()      {}
+func (*CommentStatement) _statementNode()    {}
 func (*DebuggerStatement) _statementNode()   {}
 func (*DoWhileStatement) _statementNode()    {}
 func (*EmptyStatement) _statementNode()      {}
@@ -417,6 +423,7 @@ func (self *BlockStatement) Idx0() file.Idx      { return self.LeftBrace }
 func (self *BranchStatement) Idx0() file.Idx     { return self.Idx }
 func (self *CaseStatement) Idx0() file.Idx       { return self.Case }
 func (self *CatchStatement) Idx0() file.Idx      { return self.Catch }
+func (self *CommentStatement) Idx0() file.Idx    { return self.This }
 func (self *DebuggerStatement) Idx0() file.Idx   { return self.Debugger }
 func (self *DoWhileStatement) Idx0() file.Idx    { return self.Do }
 func (self *EmptyStatement) Idx0() file.Idx      { return self.Semicolon }
@@ -475,6 +482,7 @@ func (self *BlockStatement) Idx1() file.Idx      { return self.RightBrace + 1 }
 func (self *BranchStatement) Idx1() file.Idx     { return self.Idx }
 func (self *CaseStatement) Idx1() file.Idx       { return self.Consequent[len(self.Consequent)-1].Idx1() }
 func (self *CatchStatement) Idx1() file.Idx      { return self.Body.Idx1() }
+func (self *CommentStatement) Idx1() file.Idx    { return self.This }
 func (self *DebuggerStatement) Idx1() file.Idx   { return self.Debugger + 8 }
 func (self *DoWhileStatement) Idx1() file.Idx    { return self.Test.Idx1() }
 func (self *EmptyStatement) Idx1() file.Idx      { return self.Semicolon + 1 }
