@@ -524,6 +524,9 @@ func TestParserComments(t *testing.T) {
 		binaryExpression = binaryExpression
 		var numberLiteral *ast.NumberLiteral
 		var berr error
+		var assignExpression *ast.AssignExpression
+		var conditionalExpression *ast.ConditionalExpression
+		conditionalExpression = conditionalExpression
 
 		// Prefixed single comment for an expression
 		program = test("/*Test*/1", nil)
@@ -664,6 +667,74 @@ func TestParserComments(t *testing.T) {
 		is(len(binaryExpression.Right.GetMetadata().Comments), 0)
 		is(len(binaryExpression.Left.GetMetadata().Comments), 0)
 		is(binaryExpression.GetMetadata().Comments[0].Literal, "Test")
+
+		// Single comment for =
+		program = test("a = /*Test*/ b", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		assignExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression)
+		is(len(assignExpression.Metadata.Comments), 1)
+		is(len(assignExpression.Right.GetMetadata().Comments), 0)
+		is(len(assignExpression.Left.GetMetadata().Comments), 0)
+		is(assignExpression.GetMetadata().Comments[0].Literal, "Test")
+
+		// Single comment for +=
+		program = test("a += /*Test4*/ b", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		assignExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression)
+		is(len(assignExpression.Metadata.Comments), 1)
+		is(len(assignExpression.Right.GetMetadata().Comments), 0)
+		is(len(assignExpression.Left.GetMetadata().Comments), 0)
+		is(assignExpression.GetMetadata().Comments[0].Literal, "Test4")
+
+		// Single comment for ?:
+		program = test("a ? /*Test*/ b : c", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
+		is(len(conditionalExpression.Metadata.Comments), 0)
+		is(len(conditionalExpression.Test.GetMetadata().Comments), 1)
+		is(conditionalExpression.Test.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
+		is(conditionalExpression.Test.GetMetadata().Comments[0].Literal, "Test")
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
+
+		// Single comment for ?: pt 2
+		program = test("a /*Test2*/ ? b : c", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
+		is(len(conditionalExpression.Metadata.Comments), 0)
+		is(len(conditionalExpression.Test.GetMetadata().Comments), 1)
+		is(conditionalExpression.Test.GetMetadata().Comments[0].Adjacent, ast.EXPRESSION)
+		is(conditionalExpression.Test.GetMetadata().Comments[0].Literal, "Test2")
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
+
+		// Single comment for ?: pt 3
+		program = test("a ? b /*Test3*/ : c", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
+		is(len(conditionalExpression.Metadata.Comments), 0)
+		is(len(conditionalExpression.Test.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 1)
+		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Adjacent, ast.EXPRESSION)
+		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Literal, "Test3")
+		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
+
+		// Single comment for ?: pt 4
+		program = test("a ? b : /*Test4*/ c", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
+		is(len(conditionalExpression.Metadata.Comments), 0)
+		is(len(conditionalExpression.Test.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 1)
+		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
+		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Literal, "Test4")
+		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 	})
 }
 

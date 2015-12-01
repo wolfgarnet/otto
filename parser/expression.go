@@ -420,7 +420,7 @@ func (self *_parser) parseLeftHandSideExpression() ast.Expression {
 		left = self.parsePrimaryExpression()
 	}
 
-	self.findTrailingComments(left)
+	self.findTrailingComments(left, ast.EXPRESSION)
 
 	for {
 		if self.token == token.PERIOD {
@@ -435,7 +435,11 @@ func (self *_parser) parseLeftHandSideExpression() ast.Expression {
 	return left
 }
 
-func (self *_parser) findTrailingComments(node ast.Expression) {
+func (self *_parser) findTrailingComments(node ast.Expression, adjacency ast.Adjacency) {
+	self.findTrailingComments2(node, adjacency, func() ast.Expression{return nil})
+}
+
+func (self *_parser) findTrailingComments2(node ast.Expression, adjacency ast.Adjacency, next func() ast.Expression) ast.Expression {
 
 	for {
 		fmt.Printf("Current token for comment parsing is %v\n", self.literal)
@@ -448,6 +452,7 @@ func (self *_parser) findTrailingComments(node ast.Expression) {
 		comment := &ast.CommentLiteral{
 			Idx: self.idx,
 			Literal: self.literal,
+			Adjacent: adjacency,
 		}
 
 		fmt.Printf("COMMENT, %v\n", comment)
@@ -457,6 +462,8 @@ func (self *_parser) findTrailingComments(node ast.Expression) {
 	}
 
 	fmt.Printf("%v has %v comments\n", node, len(node.GetMetadata().Comments))
+
+	return next()
 }
 
 func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
@@ -476,7 +483,7 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 		left = self.parsePrimaryExpression()
 	}
 
-	self.findTrailingComments(left)
+	self.findTrailingComments(left, ast.EXPRESSION)
 	fmt.Printf("LEFT IS %v and has %v comments\n", left, len(left.GetMetadata().Comments))
 
 	for {
@@ -579,7 +586,7 @@ func (self *_parser) parseMultiplicativeExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -601,7 +608,7 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -623,7 +630,7 @@ func (self *_parser) parseShiftExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -652,7 +659,7 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling parseRelationalExpression
-		self.findTrailingComments(exp)
+		self.findTrailingComments(exp, ast.EXPRESSION)
 		exp.Right = self.parseRelationalExpression()
 
 		return exp
@@ -666,7 +673,7 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling parseRelationalExpression
-		self.findTrailingComments(exp)
+		self.findTrailingComments(exp, ast.EXPRESSION)
 		exp.Right = self.parseRelationalExpression()
 
 		return exp
@@ -683,7 +690,7 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling parseRelationalExpression
-		self.findTrailingComments(exp)
+		self.findTrailingComments(exp, ast.EXPRESSION)
 		exp.Right = self.parseRelationalExpression()
 
 		return exp
@@ -708,7 +715,7 @@ func (self *_parser) parseEqualityExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -742,7 +749,7 @@ func (self *_parser) parseBitwiseAndExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -763,7 +770,7 @@ func (self *_parser) parseBitwiseExclusiveOrExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -784,7 +791,7 @@ func (self *_parser) parseBitwiseOrExpression() ast.Expression {
 		}
 
 		// Finding comments must be done before calling next
-		self.findTrailingComments(left)
+		self.findTrailingComments(left, ast.EXPRESSION)
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -830,19 +837,38 @@ func (self *_parser) parseConditionlExpression() ast.Expression {
 
 	if self.token == token.QUESTION_MARK {
 		self.next()
+
+		// Test
+		self.findTrailingComments(left, ast.OPERATOR)
+		//exp.Alternate = self.parseAssignmentExpression()
+
+		// Consequent
 		consequent := self.parseAssignmentExpression()
+		self.findTrailingComments(consequent, ast.OPERATOR)
+		fmt.Printf("CONSEQUENT: %v\n", consequent)
+
+		// Alternate
 		self.expect(token.COLON)
-		return &ast.ConditionalExpression{
+		alternate := self.parseAssignmentExpression()
+		self.findTrailingComments(alternate, ast.OPERATOR)
+
+		exp := &ast.ConditionalExpression{
 			Test:       left,
 			Consequent: consequent,
-			Alternate:  self.parseAssignmentExpression(),
+			Alternate:  alternate,
 		}
+
+		// Finding comments must be done before calling parseAssignmentExpression
+
+
+		return exp
 	}
 
 	return left
 }
 
 func (self *_parser) parseAssignmentExpression() ast.Expression {
+	fmt.Printf("Parsing assigment expression=%v\n", self.literal)
 	left := self.parseConditionlExpression()
 	var operator token.Token
 	switch self.token {
@@ -884,11 +910,16 @@ func (self *_parser) parseAssignmentExpression() ast.Expression {
 			self.nextStatement()
 			return &ast.BadExpression{From: idx, To: self.idx}
 		}
-		return &ast.AssignExpression{
+		exp := &ast.AssignExpression{
 			Left:     left,
 			Operator: operator,
-			Right:    self.parseAssignmentExpression(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling parseAssignmentExpression
+		self.findTrailingComments(exp, ast.EXPRESSION)
+		exp.Right = self.parseAssignmentExpression()
+		return exp
 	}
 
 	return left

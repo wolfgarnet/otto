@@ -38,6 +38,12 @@ func (m *Metadata) AddComment(comment *CommentLiteral) {
 // Expression //
 // ========== //
 
+type Adjacency int
+const (
+	EXPRESSION Adjacency = iota
+	OPERATOR
+)
+
 type (
 	// All expression nodes implement the Expression interface.
 	Expression interface {
@@ -100,8 +106,9 @@ type (
 
 	CommentLiteral struct {
 		Metadata
-		Idx     file.Idx
-		Literal string
+		Idx      file.Idx
+		Literal  string
+		Adjacent Adjacency
 	}
 
 	ConditionalExpression struct {
