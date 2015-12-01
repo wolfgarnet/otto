@@ -537,6 +537,38 @@ func TestParserComments(t *testing.T) {
 		is(commentStatement.Body, "Test")
 		*/
 
+		// Single comment for an expression
+		program = test("1 + /*Test*/ 2", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		binaryExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression)
+		is(len(binaryExpression.Metadata.Comments), 1)
+		is(len(binaryExpression.Right.GetMetadata().Comments), 0)
+		is(len(binaryExpression.Left.GetMetadata().Comments), 0)
+
+		berr := testComments(binaryExpression.GetMetadata(), []string{"Test"})
+		is(berr, nil)
+
+		// Single comment for an expression, pt 2
+		program = test("1 + 2 /*Test*/", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		binaryExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression)
+		is(len(binaryExpression.Metadata.Comments), 0)
+		is(len(binaryExpression.Right.GetMetadata().Comments), 1)
+		is(len(binaryExpression.Left.GetMetadata().Comments), 0)
+
+		// Multiple comments for an expression
+		program = test("1 + /*WHOOOT*/ /*Test*/ 2", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		binaryExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression)
+		is(len(binaryExpression.Metadata.Comments), 2)
+		is(len(binaryExpression.Right.GetMetadata().Comments), 0)
+		is(len(binaryExpression.Left.GetMetadata().Comments), 0)
+
+		berr = testComments(binaryExpression.GetMetadata(), []string{"WHOOOT", "Test"})
+		is(berr, nil)
 
 	})
 }

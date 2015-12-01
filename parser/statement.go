@@ -256,7 +256,6 @@ func (self *_parser) parseCommentStatement() ast.Statement {
 	idx0 := self.expect(token.COMMENT)
 
 	node := &ast.CommentStatement{
-		//This: self.idx,
 		Start: idx0,
 		End:   self.idx,
 		Body:  literal,
