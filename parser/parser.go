@@ -42,6 +42,7 @@ import (
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/file"
 	"github.com/robertkrimen/otto/token"
+	"fmt"
 )
 
 // A Mode value is a set of flags (or 0). They control optional parser functionality.
@@ -190,6 +191,7 @@ func (self *_parser) parse() (*ast.Program, error) {
 
 func (self *_parser) next() {
 	self.token, self.literal, self.idx = self.scan()
+	fmt.Printf("NEXT() token=%v, literal=%v, idx=%v\n", self.token, self.literal, self.idx)
 }
 
 func (self *_parser) optionalSemicolon() {

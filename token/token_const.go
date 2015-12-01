@@ -74,6 +74,9 @@ const (
 	COLON             // :
 	QUESTION_MARK     // ?
 
+	//INLINE_COMMENT_START
+	//INLINE_COMMENT_END
+
 	firstKeyword
 	IF
 	IN

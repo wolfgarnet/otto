@@ -8,6 +8,8 @@ import (
 
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/file"
+	"fmt"
+	"reflect"
 )
 
 func firstErr(err error) error {
@@ -495,381 +497,417 @@ func TestParser(t *testing.T) {
 			return program
 		}
 
-		test(`
-            abc
-            --
-            []
-        `, "(anonymous): Line 3:13 Invalid left-hand side in assignment")
-
-		test(`
-            abc--
-            []
-        `, nil)
-
-		test("1\n[]\n", "(anonymous): Line 2:2 Unexpected token ]")
-
-		test(`
-            function abc() {
-            }
-            abc()
-        `, nil)
-
+//		test(`
+//            abc
+//            --
+//            []
+//        `, "(anonymous): Line 3:13 Invalid left-hand side in assignment")
+//
+//		test(`
+//            abc--
+//            []
+//        `, nil)
+//
+//		test("1\n[]\n", "(anonymous): Line 2:2 Unexpected token ]")
+//
+//		test(`
+//            function abc() {
+//            }
+//            abc()
+//        `, nil)
+//
 		program := test("", nil)
+//
+//		test("//", nil)
+//
+//		test("/* */", nil)
+//
+//		test("/** **/", nil)
+//
+//		test("/*****/", nil)
+//
+//		test("/*", "(anonymous): Line 1:3 Unexpected end of input")
+//
+//		test("#", "(anonymous): Line 1:1 Unexpected token ILLEGAL")
+//
+//		test("/**/#", "(anonymous): Line 1:5 Unexpected token ILLEGAL")
+//
+//		test("new +", "(anonymous): Line 1:5 Unexpected token +")
+//
+//		program = test(";", nil)
+//		is(len(program.Body), 1)
+//		is(program.Body[0].(*ast.EmptyStatement).Semicolon, file.Idx(1))
+//
+//		program = test(";;", nil)
+//		is(len(program.Body), 2)
+//		is(program.Body[0].(*ast.EmptyStatement).Semicolon, file.Idx(1))
+//		is(program.Body[1].(*ast.EmptyStatement).Semicolon, file.Idx(2))
+//
+//		program = test("1.2", nil)
+//		is(len(program.Body), 1)
+//		is(program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.NumberLiteral).Literal, "1.2")
 
-		test("//", nil)
+		println("STARTING")
 
-		test("/* */", nil)
-
-		test("/** **/", nil)
-
-		test("/*****/", nil)
-
-		test("/*", "(anonymous): Line 1:3 Unexpected end of input")
-
-		test("#", "(anonymous): Line 1:1 Unexpected token ILLEGAL")
-
-		test("/**/#", "(anonymous): Line 1:5 Unexpected token ILLEGAL")
-
-		test("new +", "(anonymous): Line 1:5 Unexpected token +")
-
-		program = test(";", nil)
+		program = test("1 + 2 /*WHOOOT*/", nil)
 		is(len(program.Body), 1)
-		is(program.Body[0].(*ast.EmptyStatement).Semicolon, file.Idx(1))
+		program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.NumberLiteral).Literal
 
-		program = test(";;", nil)
+		//program = test("/*awdawd*/1.2 + /*test*/ 2 /*WHOOOT*/", nil)
+		program = test("1 + 2 /*WHOOOT*/", nil)
+		//program = test("1 + /*WHOOOT*/ 2", nil)
+		println("PARSED")
+		for k, v := range program.Body {
+			fmt.Printf("Type of line %v: %v\n", k, reflect.TypeOf(v))
+		}
+
 		is(len(program.Body), 2)
-		is(program.Body[0].(*ast.EmptyStatement).Semicolon, file.Idx(1))
-		is(program.Body[1].(*ast.EmptyStatement).Semicolon, file.Idx(2))
 
-		program = test("1.2", nil)
-		is(len(program.Body), 1)
-		is(program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.NumberLiteral).Literal, "1.2")
-
-		program = test("/* */1.2", nil)
-		is(len(program.Body), 1)
-		is(program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.NumberLiteral).Literal, "1.2")
-
-		program = test("\n", nil)
-		is(len(program.Body), 0)
-
-		test(`
-            if (0) {
-                abc = 0
-            }
-            else abc = 0
-        `, nil)
-
-		test("if (0) abc = 0 else abc = 0", "(anonymous): Line 1:16 Unexpected token else")
-
-		test(`
-            if (0) {
-                abc = 0
-            } else abc = 0
-        `, nil)
-
-		test(`
-            if (0) {
-                abc = 1
-            } else {
-            }
-        `, nil)
-
-		test(`
-            do {
-            } while (true)
-        `, nil)
-
-		test(`
-            try {
-            } finally {
-            }
-        `, nil)
-
-		test(`
-            try {
-            } catch (abc) {
-            } finally {
-            }
-        `, nil)
-
-		test(`
-            try {
-            }
-            catch (abc) {
-            }
-            finally {
-            }
-        `, nil)
-
-		test(`try {} catch (abc) {} finally {}`, nil)
-
-		test(`
-            do {
-                do {
-                } while (0)
-            } while (0)
-        `, nil)
-
-		test(`
-            (function(){
-                try {
-                    if (
-                        1
-                    ) {
-                        return 1
-                    }
-                    return 0
-                } finally {
-                }
-            })()
-        `, nil)
-
-		test("abc = ''\ndef", nil)
-
-		test("abc = 1\ndef", nil)
-
-		test("abc = Math\ndef", nil)
-
-		test(`"\'"`, nil)
-
-		test(`
-            abc = function(){
-            }
-            abc = 0
-        `, nil)
-
-		test("abc.null = 0", nil)
-
-		test("0x41", nil)
-
-		test(`"\d"`, nil)
-
-		test(`(function(){return this})`, nil)
-
-		test(`
-            Object.defineProperty(Array.prototype, "0", {
-                value: 100,
-                writable: false,
-                configurable: true
-            });
-            abc = [101];
-            abc.hasOwnProperty("0") && abc[0] === 101;
-        `, nil)
-
-		test(`new abc()`, nil)
-		test(`new {}`, nil)
-
-		test(`
-            limit = 4
-            result = 0
-            while (limit) {
-                limit = limit - 1
-                if (limit) {
-                }
-                else {
-                    break
-                }
-                result = result + 1
-            }
-        `, nil)
-
-		test(`
-            while (0) {
-                if (0) {
-                    continue
-                }
-            }
-        `, nil)
-
-		test("var \u0061\u0062\u0063 = 0", nil)
-
-		// 7_3_1
-		test("var test7_3_1\nabc = 66;", nil)
-		test("var test7_3_1\u2028abc = 66;", nil)
-
-		// 7_3_3
-		test("//\u2028 =;", "(anonymous): Line 2:2 Unexpected token =")
-
-		// 7_3_10
-		test("var abc = \u2029;", "(anonymous): Line 2:1 Unexpected token ;")
-		test("var abc = \\u2029;", "(anonymous): Line 1:11 Unexpected token ILLEGAL")
-		test("var \\u0061\\u0062\\u0063 = 0;", nil)
-
-		test("'", "(anonymous): Line 1:1 Unexpected token ILLEGAL")
-
-		test("'\nstr\ning\n'", "(anonymous): Line 1:1 Unexpected token ILLEGAL")
-
-		// S7.6_A4.3_T1
-		test(`var $\u0030 = 0;`, nil)
-
-		// S7.6.1.1_A1.1
-		test(`switch = 1`, "(anonymous): Line 1:8 Unexpected token =")
-
-		// S7.8.3_A2.1_T1
-		test(`.0 === 0.0`, nil)
-
-		// 7.8.5-1
-		test("var regExp = /\\\rn/;", "(anonymous): Line 1:14 Invalid regular expression: missing /")
-
-		// S7.8.5_A1.1_T2
-		test("var regExp = /=/;", nil)
-
-		// S7.8.5_A1.2_T1
-		test("/*/", "(anonymous): Line 1:4 Unexpected end of input")
-
-		// Sbp_7.9_A9_T3
-		test(`
-            do {
-            ;
-            } while (false) true
-        `, nil)
-
-		// S7.9_A10_T10
-		test(`
-            {a:1
-            } 3
-        `, nil)
-
-		test(`
-            abc
-            ++def
-        `, nil)
-
-		// S7.9_A5.2_T1
-		test(`
-            for(false;false
-            ) {
-            break;
-            }
-        `, "(anonymous): Line 3:13 Unexpected token )")
-
-		// S7.9_A9_T8
-		test(`
-            do {};
-            while (false)
-        `, "(anonymous): Line 2:18 Unexpected token ;")
-
-		// S8.4_A5
-		test(`
-            "x\0y"
-        `, nil)
-
-		// S9.3.1_A6_T1
-		test(`
-            10e10000
-        `, nil)
-
-		// 10.4.2-1-5
-		test(`
-            "abc\
-            def"
-        `, nil)
-
-		test("'\\\n'", nil)
-
-		test("'\\\r\n'", nil)
-
-		//// 11.13.1-1-1
-		test("42 = 42;", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
-
-		// S11.13.2_A4.2_T1.3
-		test(`
-            abc /= "1"
-        `, nil)
-
-		// 12.1-1
-		test(`
-            try{};catch(){}
-        `, "(anonymous): Line 2:13 Missing catch or finally after try")
-
-		// 12.1-3
-		test(`
-            try{};finally{}
-        `, "(anonymous): Line 2:13 Missing catch or finally after try")
-
-		// S12.6.3_A11.1_T3
-		test(`
-            while (true) {
-                break abc;
-            }
-        `, "(anonymous): Line 3:17 Undefined label 'abc'")
-
-		// S15.3_A2_T1
-		test(`var x / = 1;`, "(anonymous): Line 1:7 Unexpected token /")
-
-		test(`
-            function abc() {
-                if (0)
-                    return;
-                else {
-                }
-            }
-        `, nil)
-
-		test("//\u2028 var =;", "(anonymous): Line 2:6 Unexpected token =")
-
-		test(`
-            throw
-            {}
-        `, "(anonymous): Line 2:13 Illegal newline after throw")
-
-		// S7.6.1.1_A1.11
-		test(`
-            function = 1
-        `, "(anonymous): Line 2:22 Unexpected token =")
-
-		// S7.8.3_A1.2_T1
-		test(`0e1`, nil)
-
-		test("abc = 1; abc\n++", "(anonymous): Line 2:3 Unexpected end of input")
-
-		// ---
-
-		test("({ get abc() {} })", nil)
-
-		test(`for (abc.def in {}) {}`, nil)
-
-		test(`while (true) { break }`, nil)
-
-		test(`while (true) { continue }`, nil)
-
-		test(`abc=/^(?:(\w+:)\/{2}(\w+(?:\.\w+)*\/?)|(.{0,2}\/{1}))?([/.]*?(?:[^?]+)?\/)?((?:[^/?]+)\.(\w+))(?:\?(\S+)?)?$/,def=/^(?:(\w+:)\/{2})|(.{0,2}\/{1})?([/.]*?(?:[^?]+)?\/?)?$/`, nil)
-
-		test(`(function() { try {} catch (err) {} finally {} return })`, nil)
-
-		test(`0xde0b6b3a7640080.toFixed(0)`, nil)
-
-		test(`/[^-._0-9A-Za-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u37f-\u1fff\u200c-\u200d\u203f\u2040\u2070-\u218f]/`, nil)
-
-		test(`/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE-\uFFFF]/`, nil)
-
-		test("var abc = 1;\ufeff", nil)
-
-		test("\ufeff/* var abc = 1; */", nil)
-
-		test(`if (-0x8000000000000000<=abc&&abc<=0x8000000000000000) {}`, nil)
-
-		test(`(function(){debugger;return this;})`, nil)
-
-		test(`
-
-        `, nil)
-
-		test(`
-            var abc = ""
-            debugger
-        `, nil)
-
-		test(`
-            var abc = /\[\]$/
-            debugger
-        `, nil)
-
-		test(`
-            var abc = 1 /
-                2
-            debugger
-        `, nil)
+		//is(program.Body[1].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Left.(*ast.NumberLiteral).Literal, "1.2")
+
+		//program = test("/***/function() {1.2 + /*test*/ /*ddd*/2;}", nil)
+		//println("PARSED")
+		//is(len(program.Body), 1)
+
+//		program = test("/*test*/", nil)
+//		println("PARSED")
+//		is(len(program.Body), 1)
+//		is(program.Body[0].(*ast.CommentStatement).Body, "test")
+//
+//		program = test("1.2 + 2; //stuff", nil)
+//		println("PARSED")
+//		is(len(program.Body), 2)
+//		is(program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Left.(*ast.NumberLiteral).Literal, "1.2")
+//		is(program.Body[1].(*ast.CommentStatement).Body, "stuff")
+//
+//		program = test("/*test*/1.2 + 2; //stuff", nil)
+//		println("PARSED")
+//		is(len(program.Body), 3)
+//		is(program.Body[0].(*ast.CommentStatement).Body, "test")
+//		is(program.Body[1].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Left.(*ast.NumberLiteral).Literal, "1.2")
+//		is(program.Body[2].(*ast.CommentStatement).Body, "stuff")
+
+//		program = test("\n", nil)
+//		is(len(program.Body), 0)
+//
+//		test(`
+//            if (0) {
+//                abc = 0
+//            }
+//            else abc = 0
+//        `, nil)
+//
+//		test("if (0) abc = 0 else abc = 0", "(anonymous): Line 1:16 Unexpected token else")
+//
+//		test(`
+//            if (0) {
+//                abc = 0
+//            } else abc = 0
+//        `, nil)
+//
+//		test(`
+//            if (0) {
+//                abc = 1
+//            } else {
+//            }
+//        `, nil)
+//
+//		test(`
+//            do {
+//            } while (true)
+//        `, nil)
+//
+//		test(`
+//            try {
+//            } finally {
+//            }
+//        `, nil)
+//
+//		test(`
+//            try {
+//            } catch (abc) {
+//            } finally {
+//            }
+//        `, nil)
+//
+//		test(`
+//            try {
+//            }
+//            catch (abc) {
+//            }
+//            finally {
+//            }
+//        `, nil)
+//
+//		test(`try {} catch (abc) {} finally {}`, nil)
+//
+//		test(`
+//            do {
+//                do {
+//                } while (0)
+//            } while (0)
+//        `, nil)
+//
+//		test(`
+//            (function(){
+//                try {
+//                    if (
+//                        1
+//                    ) {
+//                        return 1
+//                    }
+//                    return 0
+//                } finally {
+//                }
+//            })()
+//        `, nil)
+//
+//		test("abc = ''\ndef", nil)
+//
+//		test("abc = 1\ndef", nil)
+//
+//		test("abc = Math\ndef", nil)
+//
+//		test(`"\'"`, nil)
+//
+//		test(`
+//            abc = function(){
+//            }
+//            abc = 0
+//        `, nil)
+//
+//		test("abc.null = 0", nil)
+//
+//		test("0x41", nil)
+//
+//		test(`"\d"`, nil)
+//
+//		test(`(function(){return this})`, nil)
+//
+//		test(`
+//            Object.defineProperty(Array.prototype, "0", {
+//                value: 100,
+//                writable: false,
+//                configurable: true
+//            });
+//            abc = [101];
+//            abc.hasOwnProperty("0") && abc[0] === 101;
+//        `, nil)
+//
+//		test(`new abc()`, nil)
+//		test(`new {}`, nil)
+//
+//		test(`
+//            limit = 4
+//            result = 0
+//            while (limit) {
+//                limit = limit - 1
+//                if (limit) {
+//                }
+//                else {
+//                    break
+//                }
+//                result = result + 1
+//            }
+//        `, nil)
+//
+//		test(`
+//            while (0) {
+//                if (0) {
+//                    continue
+//                }
+//            }
+//        `, nil)
+//
+//		test("var \u0061\u0062\u0063 = 0", nil)
+//
+//		// 7_3_1
+//		test("var test7_3_1\nabc = 66;", nil)
+//		test("var test7_3_1\u2028abc = 66;", nil)
+//
+//		// 7_3_3
+//		test("//\u2028 =;", "(anonymous): Line 2:2 Unexpected token =")
+//
+//		// 7_3_10
+//		test("var abc = \u2029;", "(anonymous): Line 2:1 Unexpected token ;")
+//		test("var abc = \\u2029;", "(anonymous): Line 1:11 Unexpected token ILLEGAL")
+//		test("var \\u0061\\u0062\\u0063 = 0;", nil)
+//
+//		test("'", "(anonymous): Line 1:1 Unexpected token ILLEGAL")
+//
+//		test("'\nstr\ning\n'", "(anonymous): Line 1:1 Unexpected token ILLEGAL")
+//
+//		// S7.6_A4.3_T1
+//		test(`var $\u0030 = 0;`, nil)
+//
+//		// S7.6.1.1_A1.1
+//		test(`switch = 1`, "(anonymous): Line 1:8 Unexpected token =")
+//
+//		// S7.8.3_A2.1_T1
+//		test(`.0 === 0.0`, nil)
+//
+//		// 7.8.5-1
+//		test("var regExp = /\\\rn/;", "(anonymous): Line 1:14 Invalid regular expression: missing /")
+//
+//		// S7.8.5_A1.1_T2
+//		test("var regExp = /=/;", nil)
+//
+//		// S7.8.5_A1.2_T1
+//		test("/*/", "(anonymous): Line 1:4 Unexpected end of input")
+//
+//		// Sbp_7.9_A9_T3
+//		test(`
+//            do {
+//            ;
+//            } while (false) true
+//        `, nil)
+//
+//		// S7.9_A10_T10
+//		test(`
+//            {a:1
+//            } 3
+//        `, nil)
+//
+//		test(`
+//            abc
+//            ++def
+//        `, nil)
+//
+//		// S7.9_A5.2_T1
+//		test(`
+//            for(false;false
+//            ) {
+//            break;
+//            }
+//        `, "(anonymous): Line 3:13 Unexpected token )")
+//
+//		// S7.9_A9_T8
+//		test(`
+//            do {};
+//            while (false)
+//        `, "(anonymous): Line 2:18 Unexpected token ;")
+//
+//		// S8.4_A5
+//		test(`
+//            "x\0y"
+//        `, nil)
+//
+//		// S9.3.1_A6_T1
+//		test(`
+//            10e10000
+//        `, nil)
+//
+//		// 10.4.2-1-5
+//		test(`
+//            "abc\
+//            def"
+//        `, nil)
+//
+//		test("'\\\n'", nil)
+//
+//		test("'\\\r\n'", nil)
+//
+//		//// 11.13.1-1-1
+//		test("42 = 42;", "(anonymous): Line 1:1 Invalid left-hand side in assignment")
+//
+//		// S11.13.2_A4.2_T1.3
+//		test(`
+//            abc /= "1"
+//        `, nil)
+//
+//		// 12.1-1
+//		test(`
+//            try{};catch(){}
+//        `, "(anonymous): Line 2:13 Missing catch or finally after try")
+//
+//		// 12.1-3
+//		test(`
+//            try{};finally{}
+//        `, "(anonymous): Line 2:13 Missing catch or finally after try")
+//
+//		// S12.6.3_A11.1_T3
+//		test(`
+//            while (true) {
+//                break abc;
+//            }
+//        `, "(anonymous): Line 3:17 Undefined label 'abc'")
+//
+//		// S15.3_A2_T1
+//		test(`var x / = 1;`, "(anonymous): Line 1:7 Unexpected token /")
+//
+//		test(`
+//            function abc() {
+//                if (0)
+//                    return;
+//                else {
+//                }
+//            }
+//        `, nil)
+//
+//		test("//\u2028 var =;", "(anonymous): Line 2:6 Unexpected token =")
+//
+//		test(`
+//            throw
+//            {}
+//        `, "(anonymous): Line 2:13 Illegal newline after throw")
+//
+//		// S7.6.1.1_A1.11
+//		test(`
+//            function = 1
+//        `, "(anonymous): Line 2:22 Unexpected token =")
+//
+//		// S7.8.3_A1.2_T1
+//		test(`0e1`, nil)
+//
+//		test("abc = 1; abc\n++", "(anonymous): Line 2:3 Unexpected end of input")
+//
+//		// ---
+//
+//		test("({ get abc() {} })", nil)
+//
+//		test(`for (abc.def in {}) {}`, nil)
+//
+//		test(`while (true) { break }`, nil)
+//
+//		test(`while (true) { continue }`, nil)
+//
+//		test(`abc=/^(?:(\w+:)\/{2}(\w+(?:\.\w+)*\/?)|(.{0,2}\/{1}))?([/.]*?(?:[^?]+)?\/)?((?:[^/?]+)\.(\w+))(?:\?(\S+)?)?$/,def=/^(?:(\w+:)\/{2})|(.{0,2}\/{1})?([/.]*?(?:[^?]+)?\/?)?$/`, nil)
+//
+//		test(`(function() { try {} catch (err) {} finally {} return })`, nil)
+//
+//		test(`0xde0b6b3a7640080.toFixed(0)`, nil)
+//
+//		test(`/[^-._0-9A-Za-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u37f-\u1fff\u200c-\u200d\u203f\u2040\u2070-\u218f]/`, nil)
+//
+//		test(`/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE-\uFFFF]/`, nil)
+//
+//		test("var abc = 1;\ufeff", nil)
+//
+//		test("\ufeff/* var abc = 1; */", nil)
+//
+//		test(`if (-0x8000000000000000<=abc&&abc<=0x8000000000000000) {}`, nil)
+//
+//		test(`(function(){debugger;return this;})`, nil)
+//
+//		test(`
+//
+//        `, nil)
+//
+//		test(`
+//            var abc = ""
+//            debugger
+//        `, nil)
+//
+//		test(`
+//            var abc = /\[\]$/
+//            debugger
+//        `, nil)
+//
+//		test(`
+//            var abc = 1 /
+//                2
+//            debugger
+//        `, nil)
 	})
 }
 

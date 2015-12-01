@@ -242,15 +242,17 @@ func (self *_parser) scan() (tkn token.Token, literal string, idx file.Idx) {
 					runes := self.readSingleLineComment()
 					literal = string(runes)
 					//continue
-					idx = self.idxOf(self.chrOffset)
+					//idx = self.idxOf(self.chrOffset)
 					tkn = token.COMMENT
+					insertSemicolon = true
 					return
 				} else if self.chr == '*' {
 					//self.skipMultiLineComment()
 					literal = string(self.readMultiLineComment())
-					idx = self.idxOf(self.chrOffset)
+					//idx = self.idxOf(self.chrOffset)
 					//continue
 					tkn = token.COMMENT
+					insertSemicolon = true
 					return
 				} else {
 					// Could be division, could be RegExp literal

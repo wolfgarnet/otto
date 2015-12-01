@@ -3,6 +3,7 @@ package parser
 import (
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/token"
+	"fmt"
 )
 
 func (self *_parser) parseBlockStatement() *ast.BlockStatement {
@@ -28,6 +29,7 @@ func (self *_parser) parseStatementList() (list []ast.Statement) {
 }
 
 func (self *_parser) parseStatement() ast.Statement {
+	fmt.Printf("Parsing statement\n")
 
 	if self.token == token.EOF {
 		self.errorUnexpectedToken(self.token)
@@ -36,42 +38,62 @@ func (self *_parser) parseStatement() ast.Statement {
 
 	switch self.token {
 	case token.SEMICOLON:
+		fmt.Print("';'\n")
 		return self.parseEmptyStatement()
 	case token.LEFT_BRACE:
+		fmt.Print("'{'\n")
 		return self.parseBlockStatement()
 	case token.IF:
+		fmt.Print("if\n")
 		return self.parseIfStatement()
 	case token.DO:
+		fmt.Print("do\n")
 		return self.parseDoWhileStatement()
 	case token.WHILE:
+		fmt.Print("while\n")
 		return self.parseWhileStatement()
 	case token.FOR:
+		fmt.Print("for\n")
 		return self.parseForOrForInStatement()
 	case token.BREAK:
+		fmt.Print("break\n")
 		return self.parseBreakStatement()
 	case token.CONTINUE:
+		fmt.Print("continue\n")
 		return self.parseContinueStatement()
 	case token.DEBUGGER:
+		fmt.Print("debugger\n")
 		return self.parseDebuggerStatement()
 	case token.WITH:
+		fmt.Print("with\n")
 		return self.parseWithStatement()
 	case token.VAR:
+		fmt.Print("var\n")
 		return self.parseVariableStatement()
 	case token.FUNCTION:
+		fmt.Print("function\n")
 		self.parseFunction(true)
 		// FIXME
 		return &ast.EmptyStatement{}
 	case token.SWITCH:
+		fmt.Print("switch\n")
 		return self.parseSwitchStatement()
 	case token.RETURN:
+		fmt.Print("return\n")
 		return self.parseReturnStatement()
 	case token.THROW:
+		fmt.Print("throw\n")
 		return self.parseThrowStatement()
 	case token.TRY:
+		fmt.Print("try\n")
 		return self.parseTryStatement()
+	case token.COMMENT:
+		fmt.Print("comment\n")
+		return self.parseCommentStatement()
 	}
 
 	expression := self.parseExpression()
+	fmt.Printf("Expression=%v\n", expression)
 
 	if identifier, isIdentifier := expression.(*ast.Identifier); isIdentifier && self.token == token.COLON {
 		// LabelledStatement
@@ -93,7 +115,8 @@ func (self *_parser) parseStatement() ast.Statement {
 		}
 	}
 
-	self.optionalSemicolon()
+	//self.optionalSemicolon()
+	self.semicolon()
 
 	return &ast.ExpressionStatement{
 		Expression: expression,
@@ -217,12 +240,34 @@ func (self *_parser) parseFunctionBlock(node *ast.FunctionLiteral) {
 
 func (self *_parser) parseDebuggerStatement() ast.Statement {
 	idx := self.expect(token.DEBUGGER)
+	fmt.Printf("DEBUGGER: %v\n", idx)
 
 	node := &ast.DebuggerStatement{
 		Debugger: idx,
 	}
 
 	self.semicolon()
+
+	return node
+}
+
+func (self *_parser) parseCommentStatement() ast.Statement {
+	literal := self.literal
+	idx0 := self.expect(token.COMMENT)
+	fmt.Printf("WGHAT: %v(%v) \n", idx0, literal)
+
+	//idx1 := self.expect(token.COMMENT)
+
+	node := &ast.CommentStatement{
+		//This: self.idx,
+		Start: idx0,
+		End:   idx0,
+		Body:  literal,
+	}
+
+
+	self.semicolon()
+	fmt.Printf("COMMENT NODE: %v\n", node)
 
 	return node
 }
@@ -519,15 +564,20 @@ func (self *_parser) parseSourceElement() ast.Statement {
 func (self *_parser) parseSourceElements() []ast.Statement {
 	body := []ast.Statement(nil)
 
+	fmt.Printf("PARSING SOURCE ELEMENTS\n")
+
 	for {
 		if self.token != token.STRING {
 			break
 		}
 
+		fmt.Printf("NEW STATEMENT 1\n")
+
 		body = append(body, self.parseSourceElement())
 	}
 
 	for self.token != token.EOF {
+		fmt.Printf("NEW STATEMENT 2\n")
 		body = append(body, self.parseSourceElement())
 	}
 

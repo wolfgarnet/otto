@@ -6,6 +6,7 @@ import (
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/file"
 	"github.com/robertkrimen/otto/token"
+	"fmt"
 )
 
 func (self *_parser) parseIdentifier() *ast.Identifier {
@@ -19,6 +20,7 @@ func (self *_parser) parseIdentifier() *ast.Identifier {
 }
 
 func (self *_parser) parsePrimaryExpression() ast.Expression {
+	fmt.Printf("Parsing primary expression: %v\n", self.literal)
 	literal := self.literal
 	idx := self.idx
 	switch self.token {
@@ -76,11 +78,15 @@ func (self *_parser) parsePrimaryExpression() ast.Expression {
 			self.error(idx, err.Error())
 			value = 0
 		}
-		return &ast.NumberLiteral{
+		expression := &ast.NumberLiteral{
 			Idx:     idx,
 			Literal: literal,
 			Value:   value,
+
 		}
+
+
+		return expression
 	case token.SLASH, token.QUOTIENT_ASSIGN:
 		return self.parseRegExpLiteral()
 	case token.LEFT_BRACE:
@@ -406,13 +412,15 @@ func (self *_parser) parseNewExpression() ast.Expression {
 }
 
 func (self *_parser) parseLeftHandSideExpression() ast.Expression {
-
+	fmt.Printf("PARSE LEFT HAND SIDE\n")
 	var left ast.Expression
 	if self.token == token.NEW {
 		left = self.parseNewExpression()
 	} else {
 		left = self.parsePrimaryExpression()
 	}
+
+	self.findTrailingComments(left)
 
 	for {
 		if self.token == token.PERIOD {
@@ -427,13 +435,39 @@ func (self *_parser) parseLeftHandSideExpression() ast.Expression {
 	return left
 }
 
-func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
+func (self *_parser) findTrailingComments(node ast.Expression) {
 
+	for {
+		fmt.Printf("Current token for comment parsing is %v\n", self.literal)
+		if self.token != token.COMMENT {
+			break
+		}
+
+		fmt.Printf("BUYAH!\n")
+
+		comment := &ast.CommentLiteral{
+			Idx: self.idx,
+			Literal: self.literal,
+		}
+
+		fmt.Printf("COMMENT, %v\n", comment)
+		node.GetMetadata().AddComment(comment)
+
+		self.next()
+	}
+
+	fmt.Printf("%v has %v comments\n", node, len(node.GetMetadata().Comments))
+}
+
+func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
+	fmt.Printf("PARSE LEFT HAND SIDE ALLOW CALL\n")
 	allowIn := self.scope.allowIn
 	self.scope.allowIn = true
 	defer func() {
 		self.scope.allowIn = allowIn
 	}()
+
+
 
 	var left ast.Expression
 	if self.token == token.NEW {
@@ -441,6 +475,9 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 	} else {
 		left = self.parsePrimaryExpression()
 	}
+
+	self.findTrailingComments(left)
+	fmt.Printf("LEFT IS %v and has %v comments\n", left, len(left.GetMetadata().Comments))
 
 	for {
 		if self.token == token.PERIOD {
@@ -451,6 +488,7 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 			left = self.parseCallExpression(left)
 		} else {
 			break
+			break
 		}
 	}
 
@@ -458,12 +496,14 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 }
 
 func (self *_parser) parsePostfixExpression() ast.Expression {
+	fmt.Printf("PARSE POST FIX\n")
 	operand := self.parseLeftHandSideExpressionAllowCall()
 
 	switch self.token {
 	case token.INCREMENT, token.DECREMENT:
 		// Make sure there is no line terminator here
 		if self.implicitSemicolon {
+			fmt.Printf("SEMICOLON HERE")
 			break
 		}
 		tkn := self.token
@@ -524,6 +564,7 @@ func (self *_parser) parseUnaryExpression() ast.Expression {
 }
 
 func (self *_parser) parseMultiplicativeExpression() ast.Expression {
+
 	next := self.parseUnaryExpression
 	left := next()
 
@@ -546,13 +587,18 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 	left := next()
 
 	for self.token == token.PLUS || self.token == token.MINUS {
+		fmt.Printf("+-\n")
 		tkn := self.token
 		self.next()
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		self.findTrailingComments(left)
+
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -639,8 +685,21 @@ func (self *_parser) parseEqualityExpression() ast.Expression {
 	return left
 }
 
-func (self *_parser) parseBitwiseAndExpression() ast.Expression {
+// Let's place it here
+func (self *_parser) parseInlineComment() ast.Expression {
+	//fmt.Printf("CURRENT TOKEN: %v == %v\n", self.token, self.literal)
 	next := self.parseEqualityExpression
+	left := next()
+
+	if self.token == token.COMMENT {
+		fmt.Printf("BOOM!\n")
+	}
+
+	return left
+}
+
+func (self *_parser) parseBitwiseAndExpression() ast.Expression {
+	next := self.parseInlineComment
 	left := next()
 
 	for self.token == token.AND {
@@ -794,8 +853,11 @@ func (self *_parser) parseAssignmentExpression() ast.Expression {
 }
 
 func (self *_parser) parseExpression() ast.Expression {
+	fmt.Printf("BEGIN PARSE EXPRESSION\n")
 	next := self.parseAssignmentExpression
 	left := next()
+
+	fmt.Printf("Parsing expression, next=%v, left=%v\n", next, left)
 
 	if self.token == token.COMMA {
 		sequence := []ast.Expression{left}

@@ -12,12 +12,26 @@ package ast
 import (
 	"github.com/robertkrimen/otto/file"
 	"github.com/robertkrimen/otto/token"
+	"fmt"
+	"reflect"
 )
 
 // All nodes implement the Node interface.
 type Node interface {
-	Idx0() file.Idx // The index of the first character belonging to the node
-	Idx1() file.Idx // The index of the first character immediately after the node
+	Idx0()     file.Idx // The index of the first character belonging to the node
+	Idx1()     file.Idx // The index of the first character immediately after the node
+}
+
+type Metadata struct {
+	Comments []*CommentLiteral
+}
+
+func (m *Metadata) GetMetadata() *Metadata {
+	return m
+}
+
+func (m *Metadata) AddComment(comment *CommentLiteral) {
+	m.Comments = append(m.Comments, comment)
 }
 
 // ========== //
@@ -28,27 +42,33 @@ type (
 	// All expression nodes implement the Expression interface.
 	Expression interface {
 		Node
+		GetMetadata() *Metadata
 		_expressionNode()
+		//Comments() *[]*CommentLiteral // Get an array of comments attached to this node
 	}
 
 	ArrayLiteral struct {
+		Metadata
 		LeftBracket  file.Idx
 		RightBracket file.Idx
 		Value        []Expression
 	}
 
 	AssignExpression struct {
+		Metadata
 		Operator token.Token
 		Left     Expression
 		Right    Expression
 	}
 
 	BadExpression struct {
+		Metadata
 		From file.Idx
 		To   file.Idx
 	}
 
 	BinaryExpression struct {
+		Metadata
 		Operator   token.Token
 		Left       Expression
 		Right      Expression
@@ -56,12 +76,14 @@ type (
 	}
 
 	BooleanLiteral struct {
+		Metadata
 		Idx     file.Idx
 		Literal string
 		Value   bool
 	}
 
 	BracketExpression struct {
+		Metadata
 		Left         Expression
 		Member       Expression
 		LeftBracket  file.Idx
@@ -69,24 +91,34 @@ type (
 	}
 
 	CallExpression struct {
+		Metadata
 		Callee           Expression
 		LeftParenthesis  file.Idx
 		ArgumentList     []Expression
 		RightParenthesis file.Idx
 	}
 
+	CommentLiteral struct {
+		Metadata
+		Idx     file.Idx
+		Literal string
+	}
+
 	ConditionalExpression struct {
+		Metadata
 		Test       Expression
 		Consequent Expression
 		Alternate  Expression
 	}
 
 	DotExpression struct {
+		Metadata
 		Left       Expression
 		Identifier Identifier
 	}
 
 	FunctionLiteral struct {
+		Metadata
 		Function      file.Idx
 		Name          *Identifier
 		ParameterList *ParameterList
@@ -97,11 +129,13 @@ type (
 	}
 
 	Identifier struct {
+		Metadata
 		Name string
 		Idx  file.Idx
 	}
 
 	NewExpression struct {
+		Metadata
 		New              file.Idx
 		Callee           Expression
 		LeftParenthesis  file.Idx
@@ -110,35 +144,41 @@ type (
 	}
 
 	NullLiteral struct {
+		Metadata
 		Idx     file.Idx
 		Literal string
 	}
 
 	NumberLiteral struct {
+		Metadata
 		Idx     file.Idx
 		Literal string
 		Value   interface{}
 	}
 
 	ObjectLiteral struct {
+		Metadata
 		LeftBrace  file.Idx
 		RightBrace file.Idx
 		Value      []Property
 	}
 
 	ParameterList struct {
+		Metadata
 		Opening file.Idx
 		List    []*Identifier
 		Closing file.Idx
 	}
 
 	Property struct {
+		Metadata
 		Key   string
 		Kind  string
 		Value Expression
 	}
 
 	RegExpLiteral struct {
+		Metadata
 		Idx     file.Idx
 		Literal string
 		Pattern string
@@ -147,20 +187,24 @@ type (
 	}
 
 	SequenceExpression struct {
+		Metadata
 		Sequence []Expression
 	}
 
 	StringLiteral struct {
+		Metadata
 		Idx     file.Idx
 		Literal string
 		Value   string
 	}
 
 	ThisExpression struct {
+		Metadata
 		Idx file.Idx
 	}
 
 	UnaryExpression struct {
+		Metadata
 		Operator token.Token
 		Idx      file.Idx // If a prefix operation
 		Operand  Expression
@@ -168,11 +212,20 @@ type (
 	}
 
 	VariableExpression struct {
+		Metadata
 		Name        string
 		Idx         file.Idx
 		Initializer Expression
 	}
 )
+
+func (n *NumberLiteral) String() string {
+	return n.Literal
+}
+
+func (b *BinaryExpression) String() string {
+	return fmt.Sprintf("BINARY EXPRESSION: %v(%v) %v %v(%v)", b.Left, reflect.TypeOf(b.Left), b.Operator, b.Right, reflect.TypeOf(b.Right))
+}
 
 // _expressionNode
 
@@ -183,6 +236,7 @@ func (*BinaryExpression) _expressionNode()      {}
 func (*BooleanLiteral) _expressionNode()        {}
 func (*BracketExpression) _expressionNode()     {}
 func (*CallExpression) _expressionNode()        {}
+func (*CommentLiteral) _expressionNode()        {}
 func (*ConditionalExpression) _expressionNode() {}
 func (*DotExpression) _expressionNode()         {}
 func (*FunctionLiteral) _expressionNode()       {}
@@ -239,8 +293,9 @@ type (
 	}
 
 	CommentStatement struct {
-		This file.Idx
-		Body string
+		Start file.Idx
+		End   file.Idx
+		Body  string
 	}
 
 	DebuggerStatement struct {
@@ -403,6 +458,7 @@ func (self *BinaryExpression) Idx0() file.Idx      { return self.Left.Idx0() }
 func (self *BooleanLiteral) Idx0() file.Idx        { return self.Idx }
 func (self *BracketExpression) Idx0() file.Idx     { return self.Left.Idx0() }
 func (self *CallExpression) Idx0() file.Idx        { return self.Callee.Idx0() }
+func (self *CommentLiteral) Idx0() file.Idx        { return self.Idx }
 func (self *ConditionalExpression) Idx0() file.Idx { return self.Test.Idx0() }
 func (self *DotExpression) Idx0() file.Idx         { return self.Left.Idx0() }
 func (self *FunctionLiteral) Idx0() file.Idx       { return self.Function }
@@ -423,7 +479,7 @@ func (self *BlockStatement) Idx0() file.Idx      { return self.LeftBrace }
 func (self *BranchStatement) Idx0() file.Idx     { return self.Idx }
 func (self *CaseStatement) Idx0() file.Idx       { return self.Case }
 func (self *CatchStatement) Idx0() file.Idx      { return self.Catch }
-func (self *CommentStatement) Idx0() file.Idx    { return self.This }
+func (self *CommentStatement) Idx0() file.Idx    { return self.Start }
 func (self *DebuggerStatement) Idx0() file.Idx   { return self.Debugger }
 func (self *DoWhileStatement) Idx0() file.Idx    { return self.Do }
 func (self *EmptyStatement) Idx0() file.Idx      { return self.Semicolon }
@@ -452,6 +508,7 @@ func (self *BinaryExpression) Idx1() file.Idx      { return self.Right.Idx1() }
 func (self *BooleanLiteral) Idx1() file.Idx        { return file.Idx(int(self.Idx) + len(self.Literal)) }
 func (self *BracketExpression) Idx1() file.Idx     { return self.RightBracket + 1 }
 func (self *CallExpression) Idx1() file.Idx        { return self.RightParenthesis + 1 }
+func (self *CommentLiteral) Idx1() file.Idx        { return file.Idx(int(self.Idx) + len(self.Literal)) }
 func (self *ConditionalExpression) Idx1() file.Idx { return self.Test.Idx1() }
 func (self *DotExpression) Idx1() file.Idx         { return self.Identifier.Idx1() }
 func (self *FunctionLiteral) Idx1() file.Idx       { return self.Body.Idx1() }
@@ -482,7 +539,7 @@ func (self *BlockStatement) Idx1() file.Idx      { return self.RightBrace + 1 }
 func (self *BranchStatement) Idx1() file.Idx     { return self.Idx }
 func (self *CaseStatement) Idx1() file.Idx       { return self.Consequent[len(self.Consequent)-1].Idx1() }
 func (self *CatchStatement) Idx1() file.Idx      { return self.Body.Idx1() }
-func (self *CommentStatement) Idx1() file.Idx    { return self.This }
+func (self *CommentStatement) Idx1() file.Idx    { return self.End }
 func (self *DebuggerStatement) Idx1() file.Idx   { return self.Debugger + 8 }
 func (self *DoWhileStatement) Idx1() file.Idx    { return self.Test.Idx1() }
 func (self *EmptyStatement) Idx1() file.Idx      { return self.Semicolon + 1 }
