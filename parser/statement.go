@@ -254,20 +254,13 @@ func (self *_parser) parseDebuggerStatement() ast.Statement {
 func (self *_parser) parseCommentStatement() ast.Statement {
 	literal := self.literal
 	idx0 := self.expect(token.COMMENT)
-	fmt.Printf("WGHAT: %v(%v) \n", idx0, literal)
-
-	//idx1 := self.expect(token.COMMENT)
 
 	node := &ast.CommentStatement{
 		//This: self.idx,
 		Start: idx0,
-		End:   idx0,
+		End:   self.idx,
 		Body:  literal,
 	}
-
-
-	self.semicolon()
-	fmt.Printf("COMMENT NODE: %v\n", node)
 
 	return node
 }
@@ -574,11 +567,13 @@ func (self *_parser) parseSourceElements() []ast.Statement {
 		fmt.Printf("NEW STATEMENT 1\n")
 
 		body = append(body, self.parseSourceElement())
+		fmt.Printf("CURRENT TOKEN 1: %v\n", self.literal)
 	}
 
 	for self.token != token.EOF {
 		fmt.Printf("NEW STATEMENT 2\n")
 		body = append(body, self.parseSourceElement())
+		fmt.Printf("CURRENT TOKEN 2: %v\n", self.literal)
 	}
 
 	return body
