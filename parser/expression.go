@@ -575,8 +575,12 @@ func (self *_parser) parseMultiplicativeExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -596,8 +600,8 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 			Right:    nil,
 		}
 
+		// Finding comments must be done before calling next
 		self.findTrailingComments(left)
-
 		left.(*ast.BinaryExpression).Right = next()
 	}
 
@@ -615,8 +619,12 @@ func (self *_parser) parseShiftExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -636,31 +644,49 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 	case token.LESS, token.LESS_OR_EQUAL, token.GREATER, token.GREATER_OR_EQUAL:
 		tkn := self.token
 		self.next()
-		return &ast.BinaryExpression{
+		exp := &ast.BinaryExpression{
 			Operator:   tkn,
 			Left:       left,
-			Right:      self.parseRelationalExpression(),
+			Right:      nil,
 			Comparison: true,
 		}
+
+		// Finding comments must be done before calling parseRelationalExpression
+		self.findTrailingComments(exp)
+		exp.Right = self.parseRelationalExpression()
+
+		return exp
 	case token.INSTANCEOF:
 		tkn := self.token
 		self.next()
-		return &ast.BinaryExpression{
+		exp := &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    self.parseRelationalExpression(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling parseRelationalExpression
+		self.findTrailingComments(exp)
+		exp.Right = self.parseRelationalExpression()
+
+		return exp
 	case token.IN:
 		if !allowIn {
 			return left
 		}
 		tkn := self.token
 		self.next()
-		return &ast.BinaryExpression{
+		exp := &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    self.parseRelationalExpression(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling parseRelationalExpression
+		self.findTrailingComments(exp)
+		exp.Right = self.parseRelationalExpression()
+
+		return exp
 	}
 
 	return left
@@ -677,9 +703,13 @@ func (self *_parser) parseEqualityExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator:   tkn,
 			Left:       left,
-			Right:      next(),
+			Right:      nil,
 			Comparison: true,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -699,7 +729,7 @@ func (self *_parser) parseInlineComment() ast.Expression {
 }
 
 func (self *_parser) parseBitwiseAndExpression() ast.Expression {
-	next := self.parseInlineComment
+	next := self.parseEqualityExpression
 	left := next()
 
 	for self.token == token.AND {
@@ -708,8 +738,12 @@ func (self *_parser) parseBitwiseAndExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -725,8 +759,12 @@ func (self *_parser) parseBitwiseExclusiveOrExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -742,8 +780,12 @@ func (self *_parser) parseBitwiseOrExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
