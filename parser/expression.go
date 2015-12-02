@@ -838,18 +838,21 @@ func (self *_parser) parseConditionlExpression() ast.Expression {
 	if self.token == token.QUESTION_MARK {
 		self.next()
 
-		// Test
+		// Test ?
+		fmt.Printf("COMMENTS FOR TEST\n")
 		self.findTrailingComments(left, ast.OPERATOR)
 		//exp.Alternate = self.parseAssignmentExpression()
 
-		// Consequent
+		// Consequent :
 		consequent := self.parseAssignmentExpression()
+		fmt.Printf("COMMENTS FOR CONSEQUENT\n")
 		self.findTrailingComments(consequent, ast.OPERATOR)
 		fmt.Printf("CONSEQUENT: %v\n", consequent)
 
 		// Alternate
 		self.expect(token.COLON)
 		alternate := self.parseAssignmentExpression()
+		fmt.Printf("COMMENTS FOR ALTERNATE\n")
 		self.findTrailingComments(alternate, ast.OPERATOR)
 
 		exp := &ast.ConditionalExpression{

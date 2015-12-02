@@ -688,7 +688,7 @@ func TestParserComments(t *testing.T) {
 		is(len(assignExpression.Left.GetMetadata().Comments), 0)
 		is(assignExpression.GetMetadata().Comments[0].Literal, "Test4")
 
-		// Single comment for ?:
+		// Single comment for ?: - After ?
 		program = test("a ? /*Test*/ b : c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
@@ -700,7 +700,7 @@ func TestParserComments(t *testing.T) {
 		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 
-		// Single comment for ?: pt 2
+		// Single comment for ?: pt 2 - After a
 		program = test("a /*Test2*/ ? b : c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
@@ -712,7 +712,7 @@ func TestParserComments(t *testing.T) {
 		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 
-		// Single comment for ?: pt 3
+		// Single comment for ?: pt 3 - After b
 		program = test("a ? b /*Test3*/ : c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
@@ -724,7 +724,8 @@ func TestParserComments(t *testing.T) {
 		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Literal, "Test3")
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 
-		// Single comment for ?: pt 4
+		// Single comment for ?: pt 4 - After :
+		fmt.Printf("-----------------------------------------------------\n")
 		program = test("a ? b : /*Test4*/ c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
