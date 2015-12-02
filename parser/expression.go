@@ -441,13 +441,26 @@ func (self *_parser) findTrailingComments(node ast.Expression, adjacency ast.Adj
 
 func (self *_parser) findTrailingComments2(node ast.Expression, adjacency ast.Adjacency, next func() ast.Expression) ast.Expression {
 
+	comments := self.findComments(adjacency)
+	for _, comment := range comments {
+		node.GetMetadata().AddComment(comment)
+	}
+
+	fmt.Printf("%v has %v comments\n", node, len(node.GetMetadata().Comments))
+
+	return next()
+}
+
+func (self *_parser) findComments(adjacency ast.Adjacency) []*ast.CommentLiteral {
+	fmt.Printf("Finding comments....")
+
+	comments := make([]*ast.CommentLiteral, 0)
+
 	for {
 		fmt.Printf("Current token for comment parsing is %v\n", self.literal)
 		if self.token != token.COMMENT {
 			break
 		}
-
-		fmt.Printf("BUYAH!\n")
 
 		comment := &ast.CommentLiteral{
 			Idx: self.idx,
@@ -456,14 +469,12 @@ func (self *_parser) findTrailingComments2(node ast.Expression, adjacency ast.Ad
 		}
 
 		fmt.Printf("COMMENT, %v\n", comment)
-		node.GetMetadata().AddComment(comment)
+		comments = append(comments, comment)
 
 		self.next()
 	}
 
-	fmt.Printf("%v has %v comments\n", node, len(node.GetMetadata().Comments))
-
-	return next()
+	return comments
 }
 
 func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
@@ -833,27 +844,34 @@ func (self *_parser) parseLogicalOrExpression() ast.Expression {
 }
 
 func (self *_parser) parseConditionlExpression() ast.Expression {
+	// Test
 	left := self.parseLogicalOrExpression()
 
 	if self.token == token.QUESTION_MARK {
 		self.next()
 
-		// Test ?
-		fmt.Printf("COMMENTS FOR TEST\n")
-		self.findTrailingComments(left, ast.OPERATOR)
+		// ?
+		fmt.Printf("COMMENTS FOR CONSEQUENT\n")
+		consequentComments := self.findComments(ast.OPERATOR)
 		//exp.Alternate = self.parseAssignmentExpression()
 
-		// Consequent :
+		// Consequent
 		consequent := self.parseAssignmentExpression()
-		fmt.Printf("COMMENTS FOR CONSEQUENT\n")
-		self.findTrailingComments(consequent, ast.OPERATOR)
+		consequent.GetMetadata().AddComments(consequentComments)
+		fmt.Printf("COMMENTS FOR ALTERNATE1 '%v' == %v\n", self.literal, self.token)
+
+		// :
+		self.expect(token.COLON)
+		fmt.Printf("COMMENTS FOR ALTERNATE2 '%v' == %v\n", self.literal, self.token)
+		alternateComments := self.findComments(ast.OPERATOR)
 		fmt.Printf("CONSEQUENT: %v\n", consequent)
 
 		// Alternate
-		self.expect(token.COLON)
+
 		alternate := self.parseAssignmentExpression()
-		fmt.Printf("COMMENTS FOR ALTERNATE\n")
-		self.findTrailingComments(alternate, ast.OPERATOR)
+		alternate.GetMetadata().AddComments(alternateComments)
+		//fmt.Printf("COMMENTS FOR ALTERNATE\n")
+		//self.findTrailingComments(alternate, ast.OPERATOR)
 
 		exp := &ast.ConditionalExpression{
 			Test:       left,

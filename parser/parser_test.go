@@ -689,18 +689,20 @@ func TestParserComments(t *testing.T) {
 		is(assignExpression.GetMetadata().Comments[0].Literal, "Test4")
 
 		// Single comment for ?: - After ?
+		fmt.Printf("------------------------- PT 1 ----------------------------\n")
 		program = test("a ? /*Test*/ b : c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
 		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
 		is(len(conditionalExpression.Metadata.Comments), 0)
-		is(len(conditionalExpression.Test.GetMetadata().Comments), 1)
-		is(conditionalExpression.Test.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
-		is(conditionalExpression.Test.GetMetadata().Comments[0].Literal, "Test")
-		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Test.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 1)
+		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
+		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Literal, "Test")
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 
 		// Single comment for ?: pt 2 - After a
+		fmt.Printf("------------------------- PT 2 ----------------------------\n")
 		program = test("a /*Test2*/ ? b : c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
@@ -713,6 +715,7 @@ func TestParserComments(t *testing.T) {
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 
 		// Single comment for ?: pt 3 - After b
+		fmt.Printf("------------------------- PT 3 ----------------------------\n")
 		program = test("a ? b /*Test3*/ : c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
@@ -725,17 +728,17 @@ func TestParserComments(t *testing.T) {
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
 
 		// Single comment for ?: pt 4 - After :
-		fmt.Printf("-----------------------------------------------------\n")
+		fmt.Printf("------------------------- PT 4 ----------------------------\n")
 		program = test("a ? b : /*Test4*/ c", nil)
 		is(len(program.Body), 1)
 		displayStatements(program)
 		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
 		is(len(conditionalExpression.Metadata.Comments), 0)
 		is(len(conditionalExpression.Test.GetMetadata().Comments), 0)
-		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 1)
-		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
-		is(conditionalExpression.Consequent.GetMetadata().Comments[0].Literal, "Test4")
-		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 1)
+		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
+		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Literal, "Test4")
 	})
 }
 

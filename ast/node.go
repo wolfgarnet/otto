@@ -34,6 +34,12 @@ func (m *Metadata) AddComment(comment *CommentLiteral) {
 	m.Comments = append(m.Comments, comment)
 }
 
+func (m *Metadata) AddComments(comments []*CommentLiteral) {
+	for _, comment := range comments {
+		m.Comments = append(m.Comments, comment)
+	}
+}
+
 // ========== //
 // Expression //
 // ========== //
