@@ -519,14 +519,12 @@ func TestParserComments(t *testing.T) {
 
 		var program *ast.Program
 		var commentStatement *ast.CommentStatement
-		commentStatement = commentStatement
 		var binaryExpression *ast.BinaryExpression
-		binaryExpression = binaryExpression
 		var numberLiteral *ast.NumberLiteral
 		var berr error
 		var assignExpression *ast.AssignExpression
 		var conditionalExpression *ast.ConditionalExpression
-		conditionalExpression = conditionalExpression
+		var unary *ast.UnaryExpression
 
 		// Prefixed single comment for an expression
 		program = test("/*Test*/1", nil)
@@ -688,6 +686,36 @@ func TestParserComments(t *testing.T) {
 		is(len(assignExpression.Left.GetMetadata().Comments), 0)
 		is(assignExpression.GetMetadata().Comments[0].Literal, "Test4")
 
+		// Single comment for &&
+		program = test("a && /*Test0*/ b", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		binaryExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression)
+		is(len(binaryExpression.Metadata.Comments), 1)
+		is(len(binaryExpression.Right.GetMetadata().Comments), 0)
+		is(len(binaryExpression.Left.GetMetadata().Comments), 0)
+		is(binaryExpression.GetMetadata().Comments[0].Literal, "Test0")
+
+		// Single comment for ||
+		program = test("a || /*Test0*/ b", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		binaryExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression)
+		is(len(binaryExpression.Metadata.Comments), 1)
+		is(len(binaryExpression.Right.GetMetadata().Comments), 0)
+		is(len(binaryExpression.Left.GetMetadata().Comments), 0)
+		is(binaryExpression.GetMetadata().Comments[0].Literal, "Test0")
+
+		// Single comment for || pt 2
+		program = test("a /*Test1*/ || b", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		binaryExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression)
+		is(len(binaryExpression.Metadata.Comments), 0)
+		is(len(binaryExpression.Right.GetMetadata().Comments), 0)
+		is(len(binaryExpression.Left.GetMetadata().Comments), 1)
+		is(binaryExpression.Left.GetMetadata().Comments[0].Literal, "Test1")
+
 		// Single comment for ?: - After ?
 		fmt.Printf("------------------------- PT 1 ----------------------------\n")
 		program = test("a ? /*Test*/ b : c", nil)
@@ -752,6 +780,52 @@ func TestParserComments(t *testing.T) {
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 1)
 		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Adjacent, ast.EXPRESSION)
 		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Literal, "Test5")
+
+		// Single comment for prefix ++
+		program = test("++a /*Test2*/", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		unary = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.UnaryExpression)
+		is(len(unary.Metadata.Comments), 0)
+		is(len(unary.Operand.GetMetadata().Comments), 1)
+		is(unary.Operand.GetMetadata().Comments[0].Literal, "Test2")
+
+		// Single comment for prefix ++ pt 2
+		program = test("++/*Test2*/a", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		unary = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.UnaryExpression)
+		is(len(unary.GetMetadata().Comments), 1)
+		is(unary.GetMetadata().Comments[0].Literal, "Test2")
+		is(len(unary.Operand.GetMetadata().Comments), 0)
+
+		// Single comment for DELETE
+		program = test("delete /*Test3*/a", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		unary = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.UnaryExpression)
+		is(len(unary.GetMetadata().Comments), 1)
+		is(unary.GetMetadata().Comments[0].Literal, "Test3")
+		is(len(unary.Operand.GetMetadata().Comments), 0)
+
+		// Single comment for postfix ++
+		program = test("a++/*Test3*/", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		unary = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.UnaryExpression)
+		is(len(unary.GetMetadata().Comments), 1)
+		is(unary.GetMetadata().Comments[0].Literal, "Test3")
+		is(len(unary.Operand.GetMetadata().Comments), 0)
+
+		// Single comment for postfix ++ pt 2
+		program = test("a/*Test4*/++", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		unary = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.UnaryExpression)
+		is(len(unary.Metadata.Comments), 0)
+		is(len(unary.Operand.GetMetadata().Comments), 1)
+		is(unary.Operand.GetMetadata().Comments[0].Literal, "Test4")
+
 	})
 }
 

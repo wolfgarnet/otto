@@ -514,7 +514,6 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 }
 
 func (self *_parser) parsePostfixExpression() ast.Expression {
-	fmt.Printf("PARSE POST FIX\n")
 	operand := self.parseLeftHandSideExpressionAllowCall()
 
 	switch self.token {
@@ -534,12 +533,15 @@ func (self *_parser) parsePostfixExpression() ast.Expression {
 			self.nextStatement()
 			return &ast.BadExpression{From: idx, To: self.idx}
 		}
-		return &ast.UnaryExpression{
+		exp := &ast.UnaryExpression{
 			Operator: tkn,
 			Idx:      idx,
 			Operand:  operand,
 			Postfix:  true,
 		}
+
+		self.findTrailingComments(exp, ast.OPERATOR)
+		return exp
 	}
 
 	return operand
@@ -554,16 +556,27 @@ func (self *_parser) parseUnaryExpression() ast.Expression {
 		tkn := self.token
 		idx := self.idx
 		self.next()
-		return &ast.UnaryExpression{
+
+		comments := self.findComments(ast.OPERATOR)
+
+		exp := &ast.UnaryExpression{
 			Operator: tkn,
 			Idx:      idx,
 			Operand:  self.parseUnaryExpression(),
 		}
+
+		exp.GetMetadata().AddComments(comments)
+		return exp
 	case token.INCREMENT, token.DECREMENT:
 		tkn := self.token
 		idx := self.idx
 		self.next()
+
+		// Get the comments for the operator
+		comments := self.findComments(ast.OPERATOR)
+
 		operand := self.parseUnaryExpression()
+
 		switch operand.(type) {
 		case *ast.Identifier, *ast.DotExpression, *ast.BracketExpression:
 		default:
@@ -571,11 +584,14 @@ func (self *_parser) parseUnaryExpression() ast.Expression {
 			self.nextStatement()
 			return &ast.BadExpression{From: idx, To: self.idx}
 		}
-		return &ast.UnaryExpression{
+		exp := &ast.UnaryExpression{
 			Operator: tkn,
 			Idx:      idx,
 			Operand:  operand,
 		}
+
+		exp.GetMetadata().AddComments(comments)
+		return exp
 	}
 
 	return self.parsePostfixExpression()
@@ -734,6 +750,7 @@ func (self *_parser) parseEqualityExpression() ast.Expression {
 }
 
 // Let's place it here
+// @Deprecated
 func (self *_parser) parseInlineComment() ast.Expression {
 	//fmt.Printf("CURRENT TOKEN: %v == %v\n", self.token, self.literal)
 	next := self.parseEqualityExpression
@@ -819,8 +836,12 @@ func (self *_parser) parseLogicalAndExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left, ast.EXPRESSION)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -836,8 +857,12 @@ func (self *_parser) parseLogicalOrExpression() ast.Expression {
 		left = &ast.BinaryExpression{
 			Operator: tkn,
 			Left:     left,
-			Right:    next(),
+			Right:    nil,
 		}
+
+		// Finding comments must be done before calling next
+		self.findTrailingComments(left, ast.EXPRESSION)
+		left.(*ast.BinaryExpression).Right = next()
 	}
 
 	return left
@@ -889,7 +914,6 @@ func (self *_parser) parseConditionlExpression() ast.Expression {
 }
 
 func (self *_parser) parseAssignmentExpression() ast.Expression {
-	fmt.Printf("Parsing assigment expression=%v\n", self.literal)
 	left := self.parseConditionlExpression()
 	var operator token.Token
 	switch self.token {

@@ -240,6 +240,10 @@ func (b *BinaryExpression) String() string {
 	return fmt.Sprintf("BINARY EXPRESSION: %v(%v) %v %v(%v)", b.Left, reflect.TypeOf(b.Left), b.Operator, b.Right, reflect.TypeOf(b.Right))
 }
 
+func (c *CommentLiteral) String() string {
+	return fmt.Sprintf("Comment literal: %v", c.Literal)
+}
+
 // _expressionNode
 
 func (*ArrayLiteral) _expressionNode()          {}
