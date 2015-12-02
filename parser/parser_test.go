@@ -739,6 +739,19 @@ func TestParserComments(t *testing.T) {
 		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 1)
 		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Adjacent, ast.OPERATOR)
 		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Literal, "Test4")
+
+		// Single comment for ?: pt 5 - After c
+		fmt.Printf("------------------------- PT 5 ----------------------------\n")
+		program = test("a ? b : c /*Test5*/", nil)
+		is(len(program.Body), 1)
+		displayStatements(program)
+		conditionalExpression = program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ConditionalExpression)
+		is(len(conditionalExpression.Metadata.Comments), 0)
+		is(len(conditionalExpression.Test.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Consequent.GetMetadata().Comments), 0)
+		is(len(conditionalExpression.Alternate.GetMetadata().Comments), 1)
+		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Adjacent, ast.EXPRESSION)
+		is(conditionalExpression.Alternate.GetMetadata().Comments[0].Literal, "Test5")
 	})
 }
 
