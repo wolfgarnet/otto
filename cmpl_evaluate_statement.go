@@ -46,6 +46,9 @@ func (self *_runtime) cmpl_evaluate_nodeStatement(node _nodeStatement) Value {
 			return toValue(newContinueResult(target))
 		}
 
+	case *_nodeCommentStatement:
+		return toValue()
+
 	case *_nodeDebuggerStatement:
 		return emptyValue // Nothing happens.
 
@@ -106,7 +109,6 @@ func (self *_runtime) cmpl_evaluate_nodeStatement(node _nodeStatement) Value {
 
 	case *_nodeWithStatement:
 		return self.cmpl_evaluate_nodeWithStatement(node)
-
 	}
 
 	panic(fmt.Errorf("Here be dragons: evaluate_nodeStatement(%T)", node))
@@ -418,4 +420,8 @@ func (self *_runtime) cmpl_evaluate_nodeWithStatement(node *_nodeWithStatement) 
 	}()
 
 	return self.cmpl_evaluate_nodeStatement(node.body)
+}
+
+func (self *_runtime) cmpl_evaluate_nodeCommentStatement() {
+
 }

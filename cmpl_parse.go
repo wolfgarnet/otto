@@ -187,7 +187,6 @@ func (cmpl *_compiler) parseExpression(in ast.Expression) _nodeExpression {
 			name:        in.Name,
 			initializer: cmpl.parseExpression(in.Initializer),
 		}
-
 	}
 
 	panic(fmt.Errorf("Here be dragons: cmpl.parseExpression(%T)", in))
@@ -348,6 +347,8 @@ func (cmpl *_compiler) parseStatement(in ast.Statement) _nodeStatement {
 			body:   cmpl.parseStatement(in.Body),
 		}
 
+	case *ast.CommentStatement:
+		return &_nodeCommentStatement{}
 	}
 
 	panic(fmt.Errorf("Here be dragons: cmpl.parseStatement(%T)", in))
@@ -533,6 +534,10 @@ type (
 		body      _nodeStatement
 	}
 
+	_nodeCommentStatement struct {
+
+	}
+
 	_nodeDebuggerStatement struct {
 	}
 
@@ -633,6 +638,7 @@ func (*_nodeBlockStatement) _statementNode()      {}
 func (*_nodeBranchStatement) _statementNode()     {}
 func (*_nodeCaseStatement) _statementNode()       {}
 func (*_nodeCatchStatement) _statementNode()      {}
+func (*_nodeCommentStatement) _statementNode()    {}
 func (*_nodeDebuggerStatement) _statementNode()   {}
 func (*_nodeDoWhileStatement) _statementNode()    {}
 func (*_nodeEmptyStatement) _statementNode()      {}
