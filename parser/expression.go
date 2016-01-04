@@ -354,8 +354,7 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 		if self.token == token.COMMA {
 			self.next()
 
-			// TODO This kind of comment requires a special empty expression node.
-			// TODO For now it is not saved.
+			// This kind of comment requires a special empty expression node.
 			empty := &ast.EmptyExpression{self.idx, self.idx}
 
 			self.commentMap.AddComments(empty, comments, ast.LEADING)
@@ -383,16 +382,13 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 	}
 	idx1 := self.expect(token.RIGHT_BRACKET)
 
-	// TODO This is where comments after a possible trailing comma should be added
-
-	// TODO COMMENT
 	array := &ast.ArrayLiteral{
 		LeftBracket:  idx0,
 		RightBracket: idx1,
 		Value:        value,
 	}
 
-	//comments = self.findComments(false)
+	// This is where comments after a possible trailing comma are added
 	self.commentMap.AddComments(array, comments2, ast.TRAILING)
 
 	return array

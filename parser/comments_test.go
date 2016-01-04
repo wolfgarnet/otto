@@ -265,7 +265,7 @@ func TestParser_comments(t *testing.T) {
 	"a2", // "ab"
 ];
         `, nil)
-		is(parser.commentMap.Size(), 1) // Should have been 2, but we need an empty expression node
+		is(parser.commentMap.Size(), 2) // Should have been 2, but we need an empty expression node
 
 		// Arrays pt 6
 		parser, program = test(`[a, /*test*/ b, c];`, nil)
@@ -281,7 +281,6 @@ func TestParser_comments(t *testing.T) {
 
 		// Arrays pt 8 - Trailing node
 		parser, program = test(`[a,,,/*test2*/];`, nil)
-		parser.commentMap.Display()
 		is(len(program.Body), 1)
 		is(checkComments((*parser.commentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.ArrayLiteral)], []string{"test2"}, ast.TRAILING), nil)
 		is(parser.commentMap.Size(), 1)
@@ -327,6 +326,11 @@ func TestParser_comments(t *testing.T) {
 		is(len(program.Body), 1)
 		is(checkComments((*parser.commentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ObjectLiteral).Value[2].Value], []string{"test2"}, ast.TRAILING), nil)
 		is(parser.commentMap.Size(), 1)
+
+		// Object literal, pt 7 - trailing comment
+		parser, program = test("obj = {x: 1, y: 2, z: 3,/*test2*/}", nil)
+		is(parser.commentMap.Size(), 1)
+		is(checkComments((*parser.commentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ObjectLiteral).Value[2].Value], []string{"test2"}, ast.TRAILING), nil)
 
 		// Line breaks
 		parser, program = test(`
