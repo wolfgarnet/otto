@@ -124,6 +124,10 @@ func (w Walker) Walk(v Visitor, node ast.Node) {
 		w.Walk(v, t.Body)
 		// Decl list?
 
+	case *ast.FunctionStatement:
+		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
+		w.Walk(v, t.Function)
+
 	case *ast.Identifier:
 		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
 

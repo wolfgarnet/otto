@@ -58,9 +58,7 @@ func (self *_parser) parseStatement() ast.Statement {
 	case token.VAR:
 		return self.parseVariableStatement()
 	case token.FUNCTION:
-		self.parseFunction(true)
-		// FIXME
-		return &ast.EmptyStatement{}
+		return self.parseFunctionStatement(true)
 	case token.SWITCH:
 		return self.parseSwitchStatement()
 	case token.RETURN:
@@ -173,6 +171,10 @@ func (self *_parser) parseParameterList() (list []string) {
 		}
 	}
 	return
+}
+
+func (self *_parser) parseFunctionStatement(declaration bool) ast.Statement {
+	return &ast.FunctionStatement{self.parseFunction(declaration)}
 }
 
 func (self *_parser) parseFunction(declaration bool) *ast.FunctionLiteral {

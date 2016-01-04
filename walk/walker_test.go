@@ -11,13 +11,13 @@ type myVisitor struct {
 }
 
 func (mv myVisitor) Visit(node ast.Node) (w Visitor) {
-	fmt.Printf("I AM VISITTING!\n")
+	fmt.Printf("I AM VISITING!\n")
 	return myVisitor{}
 }
 
 func TestWalker(t *testing.T) {
 
-	src := `a + b`
+	src := `function f() {a + b}`
 
 	program, err := parser.ParseFile(nil, "", src, 0)
 	if err != nil {
