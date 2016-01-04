@@ -336,7 +336,7 @@ func (self *_parser) parseObjectLiteral() ast.Expression {
 		Value:      value,
 	}
 
-	self.commentMap.AddComments(exp, comments2, ast.LEADING)
+	self.commentMap.AddComments(exp, comments2, ast.FINAL)
 	self.consumeComments(exp, ast.FINAL)
 
 	return exp

@@ -330,7 +330,7 @@ func TestParser_comments(t *testing.T) {
 		// Object literal, pt 7 - trailing comment
 		parser, program = test("obj = {x: 1, y: 2, z: 3,/*test2*/}", nil)
 		is(parser.commentMap.Size(), 1)
-		is(checkComments((*parser.commentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ObjectLiteral).Value[2].Value], []string{"test2"}, ast.TRAILING), nil)
+		is(checkComments((*parser.commentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.ObjectLiteral)], []string{"test2"}, ast.FINAL), nil)
 
 		// Line breaks
 		parser, program = test(`
