@@ -389,7 +389,7 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 	}
 
 	// This is where comments after a possible trailing comma are added
-	self.commentMap.AddComments(array, comments2, ast.TRAILING)
+	self.commentMap.AddComments(array, comments2, ast.FINAL)
 
 	return array
 }
