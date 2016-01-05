@@ -7,7 +7,6 @@ import (
 )
 
 type Walker struct {
-
 }
 
 type Visitor interface {
@@ -39,6 +38,7 @@ func (w Walker) Walk(v Visitor, node ast.Node) {
 
 	case *ast.BinaryExpression:
 		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
+		//w.Walk(v, t)
 		w.Walk(v, t.Left)
 		w.Walk(v, t.Right)
 
@@ -122,7 +122,18 @@ func (w Walker) Walk(v Visitor, node ast.Node) {
 		w.Walk(v, t.Name)
 		// w.Walk(t.ParameterList) ?
 		w.Walk(v, t.Body)
-		// Decl list?
+		for _, value := range t.DeclarationList {
+			switch value := value.(type) {
+			case *ast.FunctionDeclaration:
+				w.Walk(v, value.Function)
+			case *ast.VariableDeclaration:
+				for _, value := range value.List {
+					w.Walk(v, value)
+				}
+			default:
+				panic(fmt.Errorf("Here be dragons: parseProgram.declaration(%T)", value))
+			}
+		}
 
 	case *ast.FunctionStatement:
 		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
@@ -170,6 +181,20 @@ func (w Walker) Walk(v Visitor, node ast.Node) {
 		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
 		for _, e := range t.Body {
 			w.Walk(v, e)
+		}
+
+		// Walking function and variable declarations
+		for _, value := range t.DeclarationList {
+			switch value := value.(type) {
+			case *ast.FunctionDeclaration:
+				w.Walk(v, value.Function)
+			case *ast.VariableDeclaration:
+				for _, value := range value.List {
+					w.Walk(v, value)
+				}
+			default:
+				panic(fmt.Errorf("Here be dragons: cmpl.parseProgram.DeclarationList(%T)", value))
+			}
 		}
 
 	case *ast.RegExpLiteral:
