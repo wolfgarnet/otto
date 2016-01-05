@@ -176,6 +176,8 @@ func (v *Visitor3Impl) VisitArray(w *Walker3, node *ast.ArrayLiteral) {
 
 func (v *Visitor3Impl) VisitAssign(w *Walker3, node *ast.AssignExpression) {
 	println("[DEFAULT] Visiting assign", node)
+	w.Walk(node.Left)
+	w.Walk(node.Right)
 }
 
 func (v *Visitor3Impl) VisitBad(w *Walker3, node *ast.BadExpression) {
@@ -194,6 +196,9 @@ func (v *Visitor3Impl) VisitBinary(w *Walker3, node *ast.BinaryExpression) {
 
 func (v *Visitor3Impl) VisitBlock(w *Walker3, node *ast.BlockStatement) {
 	println("[DEFAULT] Visiting block", node)
+	for _, value := range node.List {
+		w.Walk(value)
+	}
 }
 
 func (v *Visitor3Impl) VisitBoolean(w *Walker3, node *ast.BooleanLiteral) {
@@ -210,6 +215,10 @@ func (v *Visitor3Impl) VisitBranch(w *Walker3, node *ast.BranchStatement) {
 
 func (v *Visitor3Impl) VisitCall(w *Walker3, node *ast.CallExpression) {
 	println("[DEFAULT] Visiting call", node)
+	w.Walk(node.Callee)
+	for _, value := range node.ArgumentList {
+		w.Walk(value)
+	}
 }
 
 func (v *Visitor3Impl) VisitCase(w *Walker3, node *ast.CaseStatement) {
@@ -251,10 +260,32 @@ func (v *Visitor3Impl) VisitForIn(w *Walker3, node *ast.ForInStatement) {
 
 func (v *Visitor3Impl) VisitFor(w *Walker3, node *ast.ForStatement) {
 	println("[DEFAULT] Visiting for", node)
+	w.Walk(node.Initializer)
+	w.Walk(node.Test)
+	w.Walk(node.Update)
+	w.Walk(node.Body)
 }
 
 func (v *Visitor3Impl) VisitFunction(w *Walker3, node *ast.FunctionLiteral) {
 	println("[DEFAULT] Visiting function", node)
+	w.Walk(node.Name)
+	for _, value := range node.ParameterList.List {
+		w.Walk(value)
+	}
+	w.Walk(node.Body)
+
+	for _, value := range node.DeclarationList {
+		switch value := value.(type) {
+		case *ast.FunctionDeclaration:
+			w.Walk(value.Function)
+		case *ast.VariableDeclaration:
+			for _, value := range value.List {
+				w.Walk(value)
+			}
+		default:
+			panic(fmt.Errorf("Here be dragons: parseProgram.declaration(%T)", value))
+		}
+	}
 }
 
 func (v *Visitor3Impl) VisitIdentifier(w *Walker3, node *ast.Identifier) {
@@ -295,10 +326,14 @@ func (v *Visitor3Impl) VisitRegex(w *Walker3, node *ast.RegExpLiteral) {
 
 func (v *Visitor3Impl) VisitSequence(w *Walker3, node *ast.SequenceExpression) {
 	println("[DEFAULT] Visiting sequence", node)
+	for _, e := range node.Sequence {
+		w.Walk(e)
+	}
 }
 
 func (v *Visitor3Impl) VisitString(w *Walker3, node *ast.StringLiteral) {
 	println("[DEFAULT] Visiting string", node)
+	// No op
 }
 
 func (v *Visitor3Impl) VisitSwitch(w *Walker3, node *ast.SwitchStatement) {
@@ -319,6 +354,7 @@ func (v *Visitor3Impl) VisitTry(w *Walker3, node *ast.TryStatement) {
 
 func (v *Visitor3Impl) VisitUnary(w *Walker3, node *ast.UnaryExpression) {
 	println("[DEFAULT] Visiting unary", node)
+	w.Walk(node.Operand)
 }
 
 func (v *Visitor3Impl) VisitVariable(w *Walker3, node *ast.VariableExpression) {
@@ -331,6 +367,8 @@ func (v *Visitor3Impl) VisitVariableStatement(w *Walker3, node *ast.VariableStat
 
 func (v *Visitor3Impl) VisitWhile(w *Walker3, node *ast.WhileStatement) {
 	println("[DEFAULT] Visiting while", node)
+	w.Walk(node.Test)
+	w.Walk(node.Body)
 }
 
 func (v *Visitor3Impl) VisitWith(w *Walker3, node *ast.WithStatement) {

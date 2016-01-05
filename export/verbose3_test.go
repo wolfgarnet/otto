@@ -9,7 +9,10 @@ import (
 
 func TestVerbose3(t *testing.T) {
 
-	src := `a + b`
+	//src := `c = a + b - (1 + 2)`
+	//src := `function fun(a) {alert("hej");c =1 + 2}`
+	//src := `for(i = 0 ; i < 10 ; i++) {a = b + 2}`
+	src := `while(true) {a = b + 2}`
 
 	program, err := parser.ParseFile(nil, "", src, 0)
 	if err != nil {
@@ -25,6 +28,6 @@ func TestVerbose3(t *testing.T) {
 	verbose := &Verbose3{}
 	walker := walk.Walker3{verbose}
 	walker.Walk(program)
-	println("TEST", verbose.ToString())
+	println(verbose.ToString())
 }
 
