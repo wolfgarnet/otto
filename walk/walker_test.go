@@ -24,6 +24,11 @@ func TestWalker(t *testing.T) {
 	}{
 		{`1 + b`, 5, reflect.TypeOf((*ast.BinaryExpression)(nil))},
 		{`c++`, 5, reflect.TypeOf((*ast.UnaryExpression)(nil))},
+		{`function fun(){}`, 4, reflect.TypeOf((*ast.FunctionLiteral)(nil))},
+		{`while(i){}`, 4, reflect.TypeOf((*ast.WhileStatement)(nil))},
+		{`if(i){}`, 4, reflect.TypeOf((*ast.IfStatement)(nil))},
+		{`with(i){}`, 4, reflect.TypeOf((*ast.WithStatement)(nil))},
+		{`switch(i){}`, 4, reflect.TypeOf((*ast.SwitchStatement)(nil))},
 	}
 
 	for i, test := range tests {
