@@ -5,10 +5,12 @@ import (
 	"fmt"
 )
 
+// Walker can walk a given AST
 type Walker struct {
 	Visitor Visitor
 }
 
+// Visitor interface for the walker.
 type Visitor interface {
 	VisitArray(walker *Walker, node *ast.ArrayLiteral, metadata []Metadata)
 	VisitAssign(walker *Walker, node *ast.AssignExpression, metadata []Metadata)
@@ -54,11 +56,13 @@ type Visitor interface {
 	VisitWith(walker *Walker, node *ast.WithStatement, metadata []Metadata)
 }
 
+// Begin the walk of the given AST node
 func (w *Walker) Begin(node ast.Node) {
 	md := []Metadata{Metadata{nil}}
 	w.Walk(node, md)
 }
 
+// Walk the AST, including metadata
 func (w *Walker) Walk(node ast.Node, metadata []Metadata) {
 
 	// Append the node
@@ -152,6 +156,7 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) {
 	}
 }
 
+// VisitorImpl is a default implementation of the Visitor interface
 type VisitorImpl struct {
 
 }
