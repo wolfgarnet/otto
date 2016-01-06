@@ -3,17 +3,7 @@ package walk
 import (
 	"testing"
 	"github.com/robertkrimen/otto/parser"
-	"github.com/robertkrimen/otto/ast"
-	"fmt"
 )
-
-type myVisitor struct {
-}
-
-func (mv myVisitor) Visit(node ast.Node) (w Visitor) {
-	fmt.Printf("I AM VISITING!\n")
-	return myVisitor{}
-}
 
 func TestWalker(t *testing.T) {
 
@@ -24,6 +14,7 @@ func TestWalker(t *testing.T) {
 		t.Errorf("Failed, %v", err)
 	}
 
-	walker := Walker{}
-	walker.Walk(myVisitor{}, program)
+	visitor := &VisitorImpl{}
+	walker := Walker{visitor}
+	walker.Begin(program)
 }

@@ -2,22 +2,32 @@ package export
 
 import (
 	"testing"
-	"github.com/robertkrimen/otto/parser"
+
 	"github.com/robertkrimen/otto/walk"
+	"github.com/robertkrimen/otto/parser"
 )
 
 func TestVerbose(t *testing.T) {
 
-	src := `a + b`
+	//src := `c = a + b - (1 + 2)`
+	//src := `function fun(a) {alert("hej");c =1 + 2}`
+	//src := `for(i = 0 ; i < 10 ; i++) {a = b + 2}`
+	src := `while(true) {a = b + 2}`
 
 	program, err := parser.ParseFile(nil, "", src, 0)
 	if err != nil {
 		t.Errorf("Failed, %v", err)
 	}
 
+	/*
+	var x walk.Visitor3 = &Verbose3{}
+	fmt.Printf("Type: %T\n", x)
+	x.VisitIdentifier(nil, nil)
+	*/
+
 	verbose := &Verbose{}
-	walker := walk.Walker{}
-	walker.Walk(verbose, program)
-	println("TEST", verbose.ToString())
+	walker := walk.Walker{verbose}
+	walker.Begin(program)
+	println(verbose.ToString())
 }
 

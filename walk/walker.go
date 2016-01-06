@@ -3,257 +3,382 @@ package walk
 import (
 	"github.com/robertkrimen/otto/ast"
 	"fmt"
-	"reflect"
 )
 
 type Walker struct {
+	Visitor Visitor
 }
 
 type Visitor interface {
-	Visit(node ast.Node) (w Visitor)
+	VisitArray(walker *Walker, node *ast.ArrayLiteral, metadata []Metadata)
+	VisitAssign(walker *Walker, node *ast.AssignExpression, metadata []Metadata)
+	VisitBad(walker *Walker, node *ast.BadExpression, metadata []Metadata)
+	VisitBadStatement(walker *Walker, node *ast.BadStatement, metadata []Metadata)
+	VisitBinary(walker *Walker, node *ast.BinaryExpression, metadata []Metadata)
+	VisitBlock(walker *Walker, node *ast.BlockStatement, metadata []Metadata)
+	VisitBoolean(walker *Walker, node *ast.BooleanLiteral, metadata []Metadata)
+	VisitBracket(walker *Walker, node *ast.BracketExpression, metadata []Metadata)
+	VisitBranch(walker *Walker, node *ast.BranchStatement, metadata []Metadata)
+	VisitCall(walker *Walker, node *ast.CallExpression, metadata []Metadata)
+	VisitCase(walker *Walker, node *ast.CaseStatement, metadata []Metadata)
+	VisitCatch(walker *Walker, node *ast.CatchStatement, metadata []Metadata)
+	VisitConditional(walker *Walker, node *ast.ConditionalExpression, metadata []Metadata)
+	VisitDebugger(walker *Walker, node *ast.DebuggerStatement, metadata []Metadata)
+	VisitDot(walker *Walker, node *ast.DotExpression, metadata []Metadata)
+	VisitDoWhile(walker *Walker, node *ast.DoWhileStatement, metadata []Metadata)
+	VisitEmpty(walker *Walker, node *ast.EmptyStatement, metadata []Metadata)
+	VisitExpression(walker *Walker, node *ast.ExpressionStatement, metadata []Metadata)
+	VisitForIn(walker *Walker, node *ast.ForInStatement, metadata []Metadata)
+	VisitFor(walker *Walker, node *ast.ForStatement, metadata []Metadata)
+	VisitFunction(walker *Walker, node *ast.FunctionLiteral, metadata []Metadata)
+	VisitIdentifier(walker *Walker, node *ast.Identifier, metadata []Metadata)
+	VisitIf(walker *Walker, node *ast.IfStatement, metadata []Metadata)
+	VisitLabelled(walker *Walker, node *ast.LabelledStatement, metadata []Metadata)
+	VisitNew(walker *Walker, node *ast.NewExpression, metadata []Metadata)
+	VisitNull(walker *Walker, node *ast.NullLiteral, metadata []Metadata)
+	VisitNumber(walker *Walker, node *ast.NumberLiteral, metadata []Metadata)
+	VisitObject(walker *Walker, node *ast.ObjectLiteral, metadata []Metadata)
+	VisitProgram(walker *Walker, node *ast.Program, metadata []Metadata)
+	VisitReturn(walker *Walker, node *ast.ReturnStatement, metadata []Metadata)
+	VisitRegex(walker *Walker, node *ast.RegExpLiteral, metadata []Metadata)
+	VisitSequence(walker *Walker, node *ast.SequenceExpression, metadata []Metadata)
+	VisitString(walker *Walker, node *ast.StringLiteral, metadata []Metadata)
+	VisitSwitch(walker *Walker, node *ast.SwitchStatement, metadata []Metadata)
+	VisitThis(walker *Walker, node *ast.ThisExpression, metadata []Metadata)
+	VisitThrow(walker *Walker, node *ast.ThrowStatement, metadata []Metadata)
+	VisitTry(walker *Walker, node *ast.TryStatement, metadata []Metadata)
+	VisitUnary(walker *Walker, node *ast.UnaryExpression, metadata []Metadata)
+	VisitVariable(walker *Walker, node *ast.VariableExpression, metadata []Metadata)
+	VisitVariableStatement(walker *Walker, node *ast.VariableStatement, metadata []Metadata)
+	VisitWhile(walker *Walker, node *ast.WhileStatement, metadata []Metadata)
+	VisitWith(walker *Walker, node *ast.WithStatement, metadata []Metadata)
 }
 
-func (w Walker) Walk(v Visitor, node ast.Node) {
-	if v = v.Visit(node); v == nil {
-		return
-	}
+func (w *Walker) Begin(node ast.Node) {
+	md := []Metadata{Metadata{nil}}
+	w.Walk(node, md)
+}
 
-	switch t := node.(type) {
+func (w *Walker) Walk(node ast.Node, metadata []Metadata) {
+
+	// Append the node
+	metadata = append(metadata, Metadata{node})
+
+	switch n := node.(type) {
 	case *ast.ArrayLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		for _, e := range t.Value {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitArray(w, n, metadata)
 	case *ast.AssignExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Left)
-		w.Walk(v, t.Right)
-
+		w.Visitor.VisitAssign(w, n, metadata)
 	case *ast.BadExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitBad(w, n, metadata)
 	case *ast.BadStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitBadStatement(w, n, metadata)
 	case *ast.BinaryExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		//w.Walk(v, t)
-		w.Walk(v, t.Left)
-		w.Walk(v, t.Right)
-
+		w.Visitor.VisitBinary(w, n, metadata)
 	case *ast.BlockStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		for _, e := range t.List {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitBlock(w, n, metadata)
 	case *ast.BooleanLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitBoolean(w, n, metadata)
 	case *ast.BracketExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Left)
-		w.Walk(v, t.Member)
-
+		w.Visitor.VisitBracket(w, n, metadata)
 	case *ast.BranchStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Label)
-
+		w.Visitor.VisitBranch(w, n, metadata)
 	case *ast.CallExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Callee)
-		for _, e := range t.ArgumentList {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitCall(w, n, metadata)
 	case *ast.CaseStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Test)
-		for _, e := range t.Consequent {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitCase(w, n, metadata)
 	case *ast.CatchStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Parameter)
-		w.Walk(v, t.Body)
-
+		w.Visitor.VisitCatch(w, n, metadata)
 	case *ast.ConditionalExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Test)
-		w.Walk(v, t.Consequent)
-		w.Walk(v, t.Alternate)
-
+		w.Visitor.VisitConditional(w, n, metadata)
 	case *ast.DebuggerStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitDebugger(w, n, metadata)
 	case *ast.DotExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Left)
-		w.Walk(v, &t.Identifier)
-
+		w.Visitor.VisitDot(w, n, metadata)
 	case *ast.DoWhileStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Test)
-		w.Walk(v, t.Body)
-
+		w.Visitor.VisitDoWhile(w, n, metadata)
 	case *ast.EmptyStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitEmpty(w, n, metadata)
 	case *ast.ExpressionStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Expression)
-
+		w.Visitor.VisitExpression(w, n, metadata)
 	case *ast.ForInStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Into)
-		w.Walk(v, t.Body)
-
+		w.Visitor.VisitForIn(w, n, metadata)
 	case *ast.ForStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Initializer)
-		w.Walk(v, t.Test)
-		w.Walk(v, t.Update)
-		w.Walk(v, t.Body)
-
+		w.Visitor.VisitFor(w, n, metadata)
 	case *ast.FunctionLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Name)
-		// w.Walk(t.ParameterList) ?
-		w.Walk(v, t.Body)
-		for _, value := range t.DeclarationList {
-			switch value := value.(type) {
-			case *ast.FunctionDeclaration:
-				w.Walk(v, value.Function)
-			case *ast.VariableDeclaration:
-				for _, value := range value.List {
-					w.Walk(v, value)
-				}
-			default:
-				panic(fmt.Errorf("Here be dragons: parseProgram.declaration(%T)", value))
-			}
-		}
-
-	case *ast.FunctionStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Function)
-
+		w.Visitor.VisitFunction(w, n, metadata)
 	case *ast.Identifier:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitIdentifier(w, n, metadata)
 	case *ast.IfStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Test)
-		w.Walk(v, t.Consequent)
-		w.Walk(v, t.Alternate)
-
+		w.Visitor.VisitIf(w, n, metadata)
 	case *ast.LabelledStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Label)
-		w.Walk(v, t.Statement)
-
+		w.Visitor.VisitLabelled(w, n, metadata)
 	case *ast.NewExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Callee)
-		for _, e := range t.ArgumentList {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitNew(w, n, metadata)
 	case *ast.NullLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitNull(w, n, metadata)
 	case *ast.NumberLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitNumber(w, n, metadata)
 	case *ast.ObjectLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
-/*	case *ast.ParameterList:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))*/
-/*	case *ast.Property:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))*/
-	case *ast.ReturnStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Argument)
-
+		w.Visitor.VisitObject(w, n, metadata)
 	case *ast.Program:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		for _, e := range t.Body {
-			w.Walk(v, e)
-		}
-
-		// Walking function and variable declarations
-		for _, value := range t.DeclarationList {
-			switch value := value.(type) {
-			case *ast.FunctionDeclaration:
-				w.Walk(v, value.Function)
-			case *ast.VariableDeclaration:
-				for _, value := range value.List {
-					w.Walk(v, value)
-				}
-			default:
-				panic(fmt.Errorf("Here be dragons: cmpl.parseProgram.DeclarationList(%T)", value))
-			}
-		}
-
+		w.Visitor.VisitProgram(w, n, metadata)
+	case *ast.ReturnStatement:
+		w.Visitor.VisitReturn(w, n, metadata)
 	case *ast.RegExpLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitRegex(w, n, metadata)
 	case *ast.SequenceExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		for _, e := range t.Sequence {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitSequence(w, n, metadata)
 	case *ast.StringLiteral:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitString(w, n, metadata)
 	case *ast.SwitchStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Discriminant)
-		for _, e := range t.Body {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitSwitch(w, n, metadata)
 	case *ast.ThisExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-
+		w.Visitor.VisitThis(w, n, metadata)
 	case *ast.ThrowStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Argument)
-
+		w.Visitor.VisitThrow(w, n, metadata)
 	case *ast.TryStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Body)
-		w.Walk(v, t.Catch)
-		w.Walk(v, t.Finally)
-
+		w.Visitor.VisitTry(w, n, metadata)
 	case *ast.UnaryExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Operand)
-
+		w.Visitor.VisitUnary(w, n, metadata)
 	case *ast.VariableExpression:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Initializer)
-
+		w.Visitor.VisitVariable(w, n, metadata)
 	case *ast.VariableStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		for _, e := range t.List {
-			w.Walk(v, e)
-		}
-
+		w.Visitor.VisitVariableStatement(w, n, metadata)
 	case *ast.WhileStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Test)
-		w.Walk(v, t.Body)
-
+		w.Visitor.VisitWhile(w, n, metadata)
 	case *ast.WithStatement:
-		fmt.Printf("Walking %v\n", reflect.TypeOf(t))
-		w.Walk(v, t.Object)
-		w.Walk(v, t.Body)
-
-	default:
-		fmt.Printf("Waaat!? %v\n", reflect.TypeOf(t))
+		w.Visitor.VisitWith(w, n, metadata)
 	}
+}
+
+type VisitorImpl struct {
+
+}
+
+func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting program %v -- %v\n", node, displayMetadata(metadata))
+
+	for _, e := range node.Body {
+		w.Walk(e, metadata)
+	}
+
+	// Walking function and variable declarations
+	for _, value := range node.DeclarationList {
+		switch value := value.(type) {
+		case *ast.FunctionDeclaration:
+			w.Walk(value.Function, metadata)
+		case *ast.VariableDeclaration:
+			for _, value := range value.List {
+				w.Walk(value, metadata)
+			}
+		default:
+			panic(fmt.Errorf("Here be dragons: cmpl.parseProgram.DeclarationList(%T)", value))
+		}
+	}
+}
+
+func (v *VisitorImpl) VisitArray(w *Walker, node *ast.ArrayLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting array %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitAssign(w *Walker, node *ast.AssignExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting assign %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Left, metadata)
+	w.Walk(node.Right, metadata)
+}
+
+func (v *VisitorImpl) VisitBad(w *Walker, node *ast.BadExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting bad expression %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitBadStatement(w *Walker, node *ast.BadStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting bad statement %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitBinary(w *Walker, node *ast.BinaryExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting binary %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Left, metadata)
+	w.Walk(node.Right, metadata)
+}
+
+func (v *VisitorImpl) VisitBlock(w *Walker, node *ast.BlockStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting block %v -- %v\n", node, displayMetadata(metadata))
+	for _, value := range node.List {
+		w.Walk(value, metadata)
+	}
+}
+
+func (v *VisitorImpl) VisitBoolean(w *Walker, node *ast.BooleanLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting boolean %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitBracket(w *Walker, node *ast.BracketExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting bracket %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitBranch(w *Walker, node *ast.BranchStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting branch %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitCall(w *Walker, node *ast.CallExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting call %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Callee, metadata)
+	for _, value := range node.ArgumentList {
+		w.Walk(value, metadata)
+	}
+}
+
+func (v *VisitorImpl) VisitCase(w *Walker, node *ast.CaseStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting case %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitCatch(w *Walker, node *ast.CatchStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting catch %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitConditional(w *Walker, node *ast.ConditionalExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting condition %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitDebugger(w *Walker, node *ast.DebuggerStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting  %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitDot(w *Walker, node *ast.DotExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting dot %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitDoWhile(w *Walker, node *ast.DoWhileStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting dowhile %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitEmpty(w *Walker, node *ast.EmptyStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting empty %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitExpression(w *Walker, node *ast.ExpressionStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting expression %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Expression, metadata)
+}
+
+func (v *VisitorImpl) VisitForIn(w *Walker, node *ast.ForInStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting forin %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitFor(w *Walker, node *ast.ForStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting for %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Initializer, metadata)
+	w.Walk(node.Test, metadata)
+	w.Walk(node.Update, metadata)
+	w.Walk(node.Body, metadata)
+}
+
+func (v *VisitorImpl) VisitFunction(w *Walker, node *ast.FunctionLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting function %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Name, metadata)
+	for _, value := range node.ParameterList.List {
+		w.Walk(value, metadata)
+	}
+	w.Walk(node.Body, metadata)
+
+	for _, value := range node.DeclarationList {
+		switch value := value.(type) {
+		case *ast.FunctionDeclaration:
+			w.Walk(value.Function, metadata)
+		case *ast.VariableDeclaration:
+			for _, value := range value.List {
+				w.Walk(value, metadata)
+			}
+		default:
+			panic(fmt.Errorf("Here be dragons: parseProgram.declaration(%T)", value))
+		}
+	}
+}
+
+func (v *VisitorImpl) VisitIdentifier(w *Walker, node *ast.Identifier, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting identifier %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitIf(w *Walker, node *ast.IfStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting if %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitLabelled(w *Walker, node *ast.LabelledStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting label %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitNew(w *Walker, node *ast.NewExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting new %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitNull(w *Walker, node *ast.NullLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting null %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitNumber(w *Walker, node *ast.NumberLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting number %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitObject(w *Walker, node *ast.ObjectLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting object %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitReturn(w *Walker, node *ast.ReturnStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting return %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitRegex(w *Walker, node *ast.RegExpLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting regex %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitSequence(w *Walker, node *ast.SequenceExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting sequence %v -- %v\n", node, displayMetadata(metadata))
+	for _, e := range node.Sequence {
+		w.Walk(e, metadata)
+	}
+}
+
+func (v *VisitorImpl) VisitString(w *Walker, node *ast.StringLiteral, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting string %v -- %v\n", node, displayMetadata(metadata))
+	// No op
+}
+
+func (v *VisitorImpl) VisitSwitch(w *Walker, node *ast.SwitchStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting switch %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitThis(w *Walker, node *ast.ThisExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting this %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitThrow(w *Walker, node *ast.ThrowStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting throw %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitTry(w *Walker, node *ast.TryStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting try %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitUnary(w *Walker, node *ast.UnaryExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting unary %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Operand, metadata)
+}
+
+func (v *VisitorImpl) VisitVariable(w *Walker, node *ast.VariableExpression, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting variable expression %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitVariableStatement(w *Walker, node *ast.VariableStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting variable statement %v -- %v\n", node, displayMetadata(metadata))
+}
+
+func (v *VisitorImpl) VisitWhile(w *Walker, node *ast.WhileStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting while %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Test, metadata)
+	w.Walk(node.Body, metadata)
+}
+
+func (v *VisitorImpl) VisitWith(w *Walker, node *ast.WithStatement, metadata []Metadata) {
+	fmt.Printf("[DEFAULT] Visiting with %v -- %v\n", node, displayMetadata(metadata))
 }
