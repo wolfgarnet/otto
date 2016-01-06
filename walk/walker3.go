@@ -54,7 +54,15 @@ type Visitor3 interface {
 	VisitWith(walker *Walker3, node *ast.WithStatement, metadata []Metadata)
 }
 
+func (w *Walker3) Walk1(node ast.Node) {
+	md := []Metadata{Metadata{nil}}
+	w.Walk(node, md)
+}
+
 func (w *Walker3) Walk(node ast.Node, metadata []Metadata) {
+
+	// Append the node
+	metadata = append(metadata, Metadata{node})
 
 	switch n := node.(type) {
 	case *ast.ArrayLiteral:
@@ -149,7 +157,7 @@ type Visitor3Impl struct {
 }
 
 func (v *Visitor3Impl) VisitProgram(w *Walker3, node *ast.Program, metadata []Metadata) {
-	println("[DEFAULT] Visiting program", node)
+	fmt.Printf("[DEFAULT] Visiting program %v -- %v\n", node, displayMetadata(metadata))
 
 	for _, e := range node.Body {
 		w.Walk(e, metadata)
@@ -171,50 +179,50 @@ func (v *Visitor3Impl) VisitProgram(w *Walker3, node *ast.Program, metadata []Me
 }
 
 func (v *Visitor3Impl) VisitArray(w *Walker3, node *ast.ArrayLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting array", node)
+	fmt.Printf("[DEFAULT] Visiting array %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitAssign(w *Walker3, node *ast.AssignExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting assign", node)
+	fmt.Printf("[DEFAULT] Visiting assign %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Left, metadata)
 	w.Walk(node.Right, metadata)
 }
 
 func (v *Visitor3Impl) VisitBad(w *Walker3, node *ast.BadExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting bad expression", node)
+	fmt.Printf("[DEFAULT] Visiting bad expression %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitBadStatement(w *Walker3, node *ast.BadStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting bad statement", node)
+	fmt.Printf("[DEFAULT] Visiting bad statement %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitBinary(w *Walker3, node *ast.BinaryExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting binary", node)
+	fmt.Printf("[DEFAULT] Visiting binary %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Left, metadata)
 	w.Walk(node.Right, metadata)
 }
 
 func (v *Visitor3Impl) VisitBlock(w *Walker3, node *ast.BlockStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting block", node)
+	fmt.Printf("[DEFAULT] Visiting block %v -- %v\n", node, displayMetadata(metadata))
 	for _, value := range node.List {
 		w.Walk(value, metadata)
 	}
 }
 
 func (v *Visitor3Impl) VisitBoolean(w *Walker3, node *ast.BooleanLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting boolean", node)
+	fmt.Printf("[DEFAULT] Visiting boolean %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitBracket(w *Walker3, node *ast.BracketExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting bracket", node)
+	fmt.Printf("[DEFAULT] Visiting bracket %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitBranch(w *Walker3, node *ast.BranchStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting branch", node)
+	fmt.Printf("[DEFAULT] Visiting branch %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitCall(w *Walker3, node *ast.CallExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting call", node)
+	fmt.Printf("[DEFAULT] Visiting call %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Callee, metadata)
 	for _, value := range node.ArgumentList {
 		w.Walk(value, metadata)
@@ -222,44 +230,44 @@ func (v *Visitor3Impl) VisitCall(w *Walker3, node *ast.CallExpression, metadata 
 }
 
 func (v *Visitor3Impl) VisitCase(w *Walker3, node *ast.CaseStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting case", node)
+	fmt.Printf("[DEFAULT] Visiting case %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitCatch(w *Walker3, node *ast.CatchStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting catch", node)
+	fmt.Printf("[DEFAULT] Visiting catch %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitConditional(w *Walker3, node *ast.ConditionalExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting condition", node)
+	fmt.Printf("[DEFAULT] Visiting condition %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitDebugger(w *Walker3, node *ast.DebuggerStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting ", node)
+	fmt.Printf("[DEFAULT] Visiting  %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitDot(w *Walker3, node *ast.DotExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting dot", node)
+	fmt.Printf("[DEFAULT] Visiting dot %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitDoWhile(w *Walker3, node *ast.DoWhileStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting dowhile", node)
+	fmt.Printf("[DEFAULT] Visiting dowhile %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitEmpty(w *Walker3, node *ast.EmptyStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting empty", node)
+	fmt.Printf("[DEFAULT] Visiting empty %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitExpression(w *Walker3, node *ast.ExpressionStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting expression", node)
+	fmt.Printf("[DEFAULT] Visiting expression %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Expression, metadata)
 }
 
 func (v *Visitor3Impl) VisitForIn(w *Walker3, node *ast.ForInStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting forin", node)
+	fmt.Printf("[DEFAULT] Visiting forin %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitFor(w *Walker3, node *ast.ForStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting for", node)
+	fmt.Printf("[DEFAULT] Visiting for %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Initializer, metadata)
 	w.Walk(node.Test, metadata)
 	w.Walk(node.Update, metadata)
@@ -267,7 +275,7 @@ func (v *Visitor3Impl) VisitFor(w *Walker3, node *ast.ForStatement, metadata []M
 }
 
 func (v *Visitor3Impl) VisitFunction(w *Walker3, node *ast.FunctionLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting function", node)
+	fmt.Printf("[DEFAULT] Visiting function %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Name, metadata)
 	for _, value := range node.ParameterList.List {
 		w.Walk(value, metadata)
@@ -289,88 +297,88 @@ func (v *Visitor3Impl) VisitFunction(w *Walker3, node *ast.FunctionLiteral, meta
 }
 
 func (v *Visitor3Impl) VisitIdentifier(w *Walker3, node *ast.Identifier, metadata []Metadata) {
-	println("[DEFAULT] Visiting identifier", node)
+	fmt.Printf("[DEFAULT] Visiting identifier %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitIf(w *Walker3, node *ast.IfStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting if", node)
+	fmt.Printf("[DEFAULT] Visiting if %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitLabelled(w *Walker3, node *ast.LabelledStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting label", node)
+	fmt.Printf("[DEFAULT] Visiting label %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitNew(w *Walker3, node *ast.NewExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting new", node)
+	fmt.Printf("[DEFAULT] Visiting new %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitNull(w *Walker3, node *ast.NullLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting null", node)
+	fmt.Printf("[DEFAULT] Visiting null %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitNumber(w *Walker3, node *ast.NumberLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting number", node)
+	fmt.Printf("[DEFAULT] Visiting number %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitObject(w *Walker3, node *ast.ObjectLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting object", node)
+	fmt.Printf("[DEFAULT] Visiting object %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitReturn(w *Walker3, node *ast.ReturnStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting return", node)
+	fmt.Printf("[DEFAULT] Visiting return %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitRegex(w *Walker3, node *ast.RegExpLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting regex", node)
+	fmt.Printf("[DEFAULT] Visiting regex %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitSequence(w *Walker3, node *ast.SequenceExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting sequence", node)
+	fmt.Printf("[DEFAULT] Visiting sequence %v -- %v\n", node, displayMetadata(metadata))
 	for _, e := range node.Sequence {
 		w.Walk(e, metadata)
 	}
 }
 
 func (v *Visitor3Impl) VisitString(w *Walker3, node *ast.StringLiteral, metadata []Metadata) {
-	println("[DEFAULT] Visiting string", node)
+	fmt.Printf("[DEFAULT] Visiting string %v -- %v\n", node, displayMetadata(metadata))
 	// No op
 }
 
 func (v *Visitor3Impl) VisitSwitch(w *Walker3, node *ast.SwitchStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting switch", node)
+	fmt.Printf("[DEFAULT] Visiting switch %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitThis(w *Walker3, node *ast.ThisExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting this", node)
+	fmt.Printf("[DEFAULT] Visiting this %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitThrow(w *Walker3, node *ast.ThrowStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting throw", node)
+	fmt.Printf("[DEFAULT] Visiting throw %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitTry(w *Walker3, node *ast.TryStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting try", node)
+	fmt.Printf("[DEFAULT] Visiting try %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitUnary(w *Walker3, node *ast.UnaryExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting unary", node)
+	fmt.Printf("[DEFAULT] Visiting unary %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Operand, metadata)
 }
 
 func (v *Visitor3Impl) VisitVariable(w *Walker3, node *ast.VariableExpression, metadata []Metadata) {
-	println("[DEFAULT] Visiting variable expression", node)
+	fmt.Printf("[DEFAULT] Visiting variable expression %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitVariableStatement(w *Walker3, node *ast.VariableStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting variable statement", node)
+	fmt.Printf("[DEFAULT] Visiting variable statement %v -- %v\n", node, displayMetadata(metadata))
 }
 
 func (v *Visitor3Impl) VisitWhile(w *Walker3, node *ast.WhileStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting while", node)
+	fmt.Printf("[DEFAULT] Visiting while %v -- %v\n", node, displayMetadata(metadata))
 	w.Walk(node.Test, metadata)
 	w.Walk(node.Body, metadata)
 }
 
 func (v *Visitor3Impl) VisitWith(w *Walker3, node *ast.WithStatement, metadata []Metadata) {
-	println("[DEFAULT] Visiting with", node)
+	fmt.Printf("[DEFAULT] Visiting with %v -- %v\n", node, displayMetadata(metadata))
 }
