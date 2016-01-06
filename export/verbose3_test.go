@@ -27,7 +27,7 @@ func TestVerbose3(t *testing.T) {
 
 	verbose := &Verbose3{}
 	walker := walk.Walker3{verbose}
-	walker.Walk(program)
+	walker.Walk(program, nil)
 	println(verbose.ToString())
 }
 
