@@ -31,6 +31,7 @@ func (mdm MetadataMap) Display() {
 
 func CreateMetadata(root ast.Node) MetadataMap {
 	m := make(MetadataMap)
+	m.NewMetadata(root, nil)
 	mdvisitor := &metadataVisitor{
 		metadata:m,
 	}
