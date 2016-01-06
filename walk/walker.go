@@ -185,6 +185,9 @@ func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Meta
 
 func (v *VisitorImpl) VisitArray(w *Walker, node *ast.ArrayLiteral, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting array %v -- %v\n", node, displayMetadata(metadata))
+	for _, e := range node.Value {
+		w.Walk(e, metadata)
+	}
 }
 
 func (v *VisitorImpl) VisitAssign(w *Walker, node *ast.AssignExpression, metadata []Metadata) {
@@ -220,10 +223,13 @@ func (v *VisitorImpl) VisitBoolean(w *Walker, node *ast.BooleanLiteral, metadata
 
 func (v *VisitorImpl) VisitBracket(w *Walker, node *ast.BracketExpression, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting bracket %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Left, metadata)
+	w.Walk(node.Member, metadata)
 }
 
 func (v *VisitorImpl) VisitBranch(w *Walker, node *ast.BranchStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting branch %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Label, metadata)
 }
 
 func (v *VisitorImpl) VisitCall(w *Walker, node *ast.CallExpression, metadata []Metadata) {
@@ -236,14 +242,23 @@ func (v *VisitorImpl) VisitCall(w *Walker, node *ast.CallExpression, metadata []
 
 func (v *VisitorImpl) VisitCase(w *Walker, node *ast.CaseStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting case %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Test, metadata)
+	for _, e := range node.Consequent {
+		w.Walk(e, metadata)
+	}
 }
 
 func (v *VisitorImpl) VisitCatch(w *Walker, node *ast.CatchStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting catch %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Parameter, metadata)
+	w.Walk(node.Body, metadata)
 }
 
 func (v *VisitorImpl) VisitConditional(w *Walker, node *ast.ConditionalExpression, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting condition %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Test, metadata)
+	w.Walk(node.Consequent, metadata)
+	w.Walk(node.Alternate, metadata)
 }
 
 func (v *VisitorImpl) VisitDebugger(w *Walker, node *ast.DebuggerStatement, metadata []Metadata) {
@@ -252,10 +267,14 @@ func (v *VisitorImpl) VisitDebugger(w *Walker, node *ast.DebuggerStatement, meta
 
 func (v *VisitorImpl) VisitDot(w *Walker, node *ast.DotExpression, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting dot %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Left, metadata)
+	w.Walk(node.Identifier, metadata)
 }
 
 func (v *VisitorImpl) VisitDoWhile(w *Walker, node *ast.DoWhileStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting dowhile %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Test, metadata)
+	w.Walk(node.Body, metadata)
 }
 
 func (v *VisitorImpl) VisitEmpty(w *Walker, node *ast.EmptyStatement, metadata []Metadata) {
@@ -269,6 +288,9 @@ func (v *VisitorImpl) VisitExpression(w *Walker, node *ast.ExpressionStatement, 
 
 func (v *VisitorImpl) VisitForIn(w *Walker, node *ast.ForInStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting forin %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Into, metadata)
+	w.Walk(node.Source, metadata)
+	w.Walk(node.Body, metadata)
 }
 
 func (v *VisitorImpl) VisitFor(w *Walker, node *ast.ForStatement, metadata []Metadata) {
@@ -307,14 +329,23 @@ func (v *VisitorImpl) VisitIdentifier(w *Walker, node *ast.Identifier, metadata 
 
 func (v *VisitorImpl) VisitIf(w *Walker, node *ast.IfStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting if %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Test, metadata)
+	w.Walk(node.Consequent, metadata)
+	w.Walk(node.Alternate, metadata)
 }
 
 func (v *VisitorImpl) VisitLabelled(w *Walker, node *ast.LabelledStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting label %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Label, metadata)
+	w.Walk(node.Statement, metadata)
 }
 
 func (v *VisitorImpl) VisitNew(w *Walker, node *ast.NewExpression, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting new %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Callee, metadata)
+	for _, e := range node.ArgumentList {
+		w.Walk(e, metadata)
+	}
 }
 
 func (v *VisitorImpl) VisitNull(w *Walker, node *ast.NullLiteral, metadata []Metadata) {
@@ -331,6 +362,7 @@ func (v *VisitorImpl) VisitObject(w *Walker, node *ast.ObjectLiteral, metadata [
 
 func (v *VisitorImpl) VisitReturn(w *Walker, node *ast.ReturnStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting return %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Argument, metadata)
 }
 
 func (v *VisitorImpl) VisitRegex(w *Walker, node *ast.RegExpLiteral, metadata []Metadata) {
@@ -351,6 +383,10 @@ func (v *VisitorImpl) VisitString(w *Walker, node *ast.StringLiteral, metadata [
 
 func (v *VisitorImpl) VisitSwitch(w *Walker, node *ast.SwitchStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting switch %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Discriminant, metadata)
+	for _, e := range node.Body {
+		w.Walk(e, metadata)
+	}
 }
 
 func (v *VisitorImpl) VisitThis(w *Walker, node *ast.ThisExpression, metadata []Metadata) {
@@ -359,10 +395,14 @@ func (v *VisitorImpl) VisitThis(w *Walker, node *ast.ThisExpression, metadata []
 
 func (v *VisitorImpl) VisitThrow(w *Walker, node *ast.ThrowStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting throw %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Argument, metadata)
 }
 
 func (v *VisitorImpl) VisitTry(w *Walker, node *ast.TryStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting try %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Body, metadata)
+	w.Walk(node.Catch, metadata)
+	w.Walk(node.Finally, metadata)
 }
 
 func (v *VisitorImpl) VisitUnary(w *Walker, node *ast.UnaryExpression, metadata []Metadata) {
@@ -372,10 +412,14 @@ func (v *VisitorImpl) VisitUnary(w *Walker, node *ast.UnaryExpression, metadata 
 
 func (v *VisitorImpl) VisitVariable(w *Walker, node *ast.VariableExpression, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting variable expression %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Initializer, metadata)
 }
 
 func (v *VisitorImpl) VisitVariableStatement(w *Walker, node *ast.VariableStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting variable statement %v -- %v\n", node, displayMetadata(metadata))
+	for _, e := range node.List {
+		w.Walk(e, metadata)
+	}
 }
 
 func (v *VisitorImpl) VisitWhile(w *Walker, node *ast.WhileStatement, metadata []Metadata) {
@@ -386,4 +430,6 @@ func (v *VisitorImpl) VisitWhile(w *Walker, node *ast.WhileStatement, metadata [
 
 func (v *VisitorImpl) VisitWith(w *Walker, node *ast.WithStatement, metadata []Metadata) {
 	fmt.Printf("[DEFAULT] Visiting with %v -- %v\n", node, displayMetadata(metadata))
+	w.Walk(node.Object, metadata)
+	w.Walk(node.Body, metadata)
 }
