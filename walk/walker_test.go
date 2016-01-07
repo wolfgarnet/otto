@@ -7,12 +7,12 @@ import (
 	"reflect"
 )
 
-type testWalker struct {
+type testVisitor struct {
 	VisitorImpl
 	ancestors []Metadata
 }
 
-func (v *testWalker) VisitIdentifier(w *Walker, node *ast.Identifier, metadata []Metadata) {
+func (v *testVisitor) VisitIdentifier(w *Walker, node *ast.Identifier, metadata []Metadata) {
 	v.ancestors = metadata
 }
 
@@ -37,7 +37,7 @@ func TestWalker(t *testing.T) {
 			t.Errorf("[%v] Failed, %v", i, err)
 		}
 
-		visitor := &testWalker{}
+		visitor := &testVisitor{}
 		walker := Walker{visitor}
 		walker.Begin(program)
 
