@@ -1,9 +1,9 @@
 package walk
 
 import (
-	"github.com/robertkrimen/otto/ast"
 	"bytes"
 	"fmt"
+	"github.com/robertkrimen/otto/ast"
 	"reflect"
 )
 
