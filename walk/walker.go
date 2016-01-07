@@ -1,8 +1,8 @@
 package walk
 
 import (
-	"github.com/robertkrimen/otto/ast"
 	"fmt"
+	"github.com/robertkrimen/otto/ast"
 )
 
 // Walker can walk a given AST
@@ -158,7 +158,6 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) {
 
 // VisitorImpl is a default implementation of the Visitor interface
 type VisitorImpl struct {
-
 }
 
 func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Metadata) {
