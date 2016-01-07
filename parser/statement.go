@@ -175,10 +175,6 @@ func (self *_parser) parseParameterList() (list []string) {
 	return
 }
 
-func (self *_parser) parseFunctionStatement(declaration bool) ast.Statement {
-	return &ast.FunctionStatement{self.parseFunction(declaration)}
-}
-
 func (self *_parser) parseFunction(declaration bool) *ast.FunctionLiteral {
 
 	node := &ast.FunctionLiteral{
