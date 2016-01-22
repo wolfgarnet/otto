@@ -154,7 +154,9 @@ func ParseFile(fileSet *file.FileSet, filename string, src interface{}, mode Mod
 
 		parser := _newParser(filename, str, base)
 		parser.mode = mode
-		return parser.parse()
+		program, err := parser.parse()
+		program.CommentMap = parser.commentMap
+		return program, err
 	}
 }
 

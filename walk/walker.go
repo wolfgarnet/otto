@@ -29,7 +29,8 @@ type Visitor interface {
 	VisitDebugger(walker *Walker, node *ast.DebuggerStatement, metadata []Metadata) Metadata
 	VisitDot(walker *Walker, node *ast.DotExpression, metadata []Metadata) Metadata
 	VisitDoWhile(walker *Walker, node *ast.DoWhileStatement, metadata []Metadata) Metadata
-	VisitEmpty(walker *Walker, node *ast.EmptyStatement, metadata []Metadata) Metadata
+	VisitEmpty(walker *Walker, node *ast.EmptyExpression, metadata []Metadata) Metadata
+	VisitEmptyStatement(walker *Walker, node *ast.EmptyStatement, metadata []Metadata) Metadata
 	VisitExpression(walker *Walker, node *ast.ExpressionStatement, metadata []Metadata) Metadata
 	VisitForIn(walker *Walker, node *ast.ForInStatement, metadata []Metadata) Metadata
 	VisitFor(walker *Walker, node *ast.ForStatement, metadata []Metadata) Metadata
@@ -152,8 +153,10 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) Metadata {
 		return w.Visitor.VisitDot(w, n, metadata)
 	case *ast.DoWhileStatement:
 		return w.Visitor.VisitDoWhile(w, n, metadata)
-	case *ast.EmptyStatement:
+	case *ast.EmptyExpression:
 		return w.Visitor.VisitEmpty(w, n, metadata)
+	case *ast.EmptyStatement:
+		return w.Visitor.VisitEmptyStatement(w, n, metadata)
 	case *ast.ExpressionStatement:
 		return w.Visitor.VisitExpression(w, n, metadata)
 	case *ast.ForInStatement:
@@ -341,7 +344,11 @@ func (v *VisitorImpl) VisitDoWhile(w *Walker, node *ast.DoWhileStatement, metada
 	return CurrentMetadata(metadata)
 }
 
-func (v *VisitorImpl) VisitEmpty(w *Walker, node *ast.EmptyStatement, metadata []Metadata) Metadata {
+func (v *VisitorImpl) VisitEmpty(w *Walker, node *ast.EmptyExpression, metadata []Metadata) Metadata {
+	return CurrentMetadata(metadata)
+}
+
+func (v *VisitorImpl) VisitEmptyStatement(w *Walker, node *ast.EmptyStatement, metadata []Metadata) Metadata {
 	return CurrentMetadata(metadata)
 }
 

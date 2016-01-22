@@ -390,6 +390,8 @@ type Program struct {
 	DeclarationList []Declaration
 
 	File *file.File
+
+	CommentMap *CommentMap
 }
 
 // ==== //
