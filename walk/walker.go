@@ -35,6 +35,7 @@ type Visitor interface {
 	VisitForIn(walker *Walker, node *ast.ForInStatement, metadata []Metadata) Metadata
 	VisitFor(walker *Walker, node *ast.ForStatement, metadata []Metadata) Metadata
 	VisitFunction(walker *Walker, node *ast.FunctionLiteral, metadata []Metadata) Metadata
+	VisitFunctionStatement(walker *Walker, node *ast.FunctionStatement, metadata []Metadata) Metadata
 	VisitIdentifier(walker *Walker, node *ast.Identifier, metadata []Metadata) Metadata
 	VisitIf(walker *Walker, node *ast.IfStatement, metadata []Metadata) Metadata
 	VisitLabelled(walker *Walker, node *ast.LabelledStatement, metadata []Metadata) Metadata
@@ -165,6 +166,8 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) Metadata {
 		return w.Visitor.VisitFor(w, n, metadata)
 	case *ast.FunctionLiteral:
 		return w.Visitor.VisitFunction(w, n, metadata)
+	case *ast.FunctionStatement:
+		return w.Visitor.VisitFunctionStatement(w, n, metadata)
 	case *ast.Identifier:
 		return w.Visitor.VisitIdentifier(w, n, metadata)
 	case *ast.IfStatement:
@@ -393,6 +396,14 @@ func (v *VisitorImpl) VisitFunction(w *Walker, node *ast.FunctionLiteral, metada
 		default:
 			panic(fmt.Errorf("Here be dragons: visit Function.declaration(%T)", value))
 		}
+	}
+
+	return CurrentMetadata(metadata)
+}
+
+func (v *VisitorImpl) VisitFunctionStatement(w *Walker, node *ast.FunctionStatement, metadata []Metadata) Metadata {
+	if node.Function != nil {
+		w.Walk(node.Function, metadata)
 	}
 
 	return CurrentMetadata(metadata)
