@@ -79,8 +79,7 @@ func (self *_parser) parseStatement() ast.Statement {
 	case token.VAR:
 		return self.parseVariableStatement()
 	case token.FUNCTION:
-		literal := self.parseFunction(true)
-		return &ast.FunctionStatement{literal}
+		return self.parseFunctionStatement()
 	case token.SWITCH:
 		return self.parseSwitchStatement()
 	case token.RETURN:
@@ -228,6 +227,21 @@ func (self *_parser) parseParameterList() (list []string) {
 		}
 	}
 	return
+}
+
+func (self *_parser) parseFunctionStatement() *ast.FunctionStatement {
+
+	// Save the previous comment statements for the function statement
+	scomments := self.comments
+	self.comments = nil
+
+	function := &ast.FunctionStatement{
+		Function: self.parseFunction(true),
+	}
+
+	self.commentMap.AddComments(function, scomments, ast.LEADING)
+
+	return function
 }
 
 func (self *_parser) parseFunction(declaration bool) *ast.FunctionLiteral {

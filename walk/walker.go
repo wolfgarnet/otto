@@ -228,7 +228,7 @@ func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Meta
 	for _, value := range node.DeclarationList {
 		switch value := value.(type) {
 		case *ast.FunctionDeclaration:
-			w.Walk(value.Function, metadata)
+			//w.Walk(value.Function, metadata)
 		case *ast.VariableDeclaration:
 			// Not needed, variable declarations are found in the AST
 		default:
@@ -388,7 +388,7 @@ func (v *VisitorImpl) VisitFunction(w *Walker, node *ast.FunctionLiteral, metada
 	for _, value := range node.DeclarationList {
 		switch value := value.(type) {
 		case *ast.FunctionDeclaration:
-			w.Walk(value.Function, metadata)
+			//w.Walk(value.Function, metadata)
 		case *ast.VariableDeclaration:
 			for _, value := range value.List {
 				w.Walk(value, metadata)
