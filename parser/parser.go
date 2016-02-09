@@ -49,12 +49,13 @@ type Mode uint
 
 const (
 	IgnoreRegExpErrors Mode = 1 << iota // Ignore RegExp compatibility errors (allow backtracking)
+	StoreComments                       // Store the comments from source to the comments map
 )
 
 type _parser struct {
-	str      string
-	length   int
-	base     int
+	str    string
+	length int
+	base   int
 
 	chr       rune // The current character
 	chrOffset int  // The offset of current character
@@ -79,15 +80,23 @@ type _parser struct {
 	mode Mode
 
 	file *file.File
+
+	commentMap       ast.CommentMap
+	comments         *ast.Comments
+	skippedLineBreak bool
 }
 
 func _newParser(filename, src string, base int) *_parser {
+	cm := ast.CommentMap{}
 	return &_parser{
-		chr:    ' ', // This is set so we can start scanning by skipping whitespace
-		str:    src,
-		length: len(src),
-		base:   base,
-		file:   file.NewFile(filename, src, base),
+		chr:              ' ', // This is set so we can start scanning by skipping whitespace
+		str:              src,
+		length:           len(src),
+		base:             base,
+		file:             file.NewFile(filename, src, base),
+		commentMap:       cm,
+		comments:         &ast.Comments{CommentMap: cm},
+		skippedLineBreak: false,
 	}
 }
 
@@ -146,7 +155,9 @@ func ParseFile(fileSet *file.FileSet, filename string, src interface{}, mode Mod
 
 		parser := _newParser(filename, str, base)
 		parser.mode = mode
-		return parser.parse()
+		program, err := parser.parse()
+		program.CommentMap = parser.commentMap
+		return program, err
 	}
 }
 
@@ -184,6 +195,10 @@ func (self *_parser) parse() (*ast.Program, error) {
 	if false {
 		self.errors.Sort()
 	}
+
+	self.comments.Unset()
+	self.commentMap.AddComments(program, self.comments.FetchAll())
+
 	return program, self.errors.Err()
 }
 
