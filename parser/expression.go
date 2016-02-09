@@ -311,8 +311,14 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 	var value []ast.Expression
 	for self.token != token.RIGHT_BRACKET && self.token != token.EOF {
 		if self.token == token.COMMA {
+			// This kind of comment requires a special empty expression node.
+			empty := &ast.EmptyExpression{self.idx, self.idx}
+			self.comments.SetNode(empty, true)
+			self.comments.Unset()
+			value = append(value, empty)
+
 			self.next()
-			value = append(value, nil)
+
 			continue
 		}
 		value = append(value, self.parseAssignmentExpression())
