@@ -17,7 +17,9 @@ func (self *_parser) parseIdentifier() *ast.Identifier {
 		Idx:  idx,
 	}
 
-	self.comments.SetNode(exp, false)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(exp, false)
+	}
 
 	return exp
 }
@@ -94,7 +96,9 @@ func (self *_parser) parsePrimaryExpression() ast.Expression {
 	case token.LEFT_PARENTHESIS:
 		self.expect(token.LEFT_PARENTHESIS)
 		expression := self.parseExpression()
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.expect(token.RIGHT_PARENTHESIS)
 		return expression
 	case token.THIS:
@@ -182,7 +186,9 @@ func (self *_parser) parseVariableDeclaration(declarationList *[]*ast.VariableEx
 		Name: literal,
 		Idx:  idx,
 	}
-	self.comments.SetNode(node, false)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(node, false)
+	}
 
 	if declarationList != nil {
 		*declarationList = append(*declarationList, node)
@@ -203,13 +209,17 @@ func (self *_parser) parseVariableDeclarationList(var_ file.Idx) []ast.Expressio
 
 	for {
 		decl := self.parseVariableDeclaration(&declarationList)
-		self.comments.SetNode(decl, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(decl, false)
+		}
 
 		list = append(list, decl)
 		if self.token != token.COMMA {
 			break
 		}
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 
 	}
@@ -295,7 +305,9 @@ func (self *_parser) parseObjectProperty() ast.Property {
 		Value: self.parseAssignmentExpression(),
 	}
 
-	self.comments.SetNode(exp.Value, true)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(exp.Value, true)
+	}
 
 	return exp
 }
@@ -333,8 +345,10 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 		if self.token == token.COMMA {
 			// This kind of comment requires a special empty expression node.
 			empty := &ast.EmptyExpression{self.idx, self.idx}
-			self.comments.SetNode(empty, true)
-			self.comments.Unset()
+			if self.mode&StoreComments != 0 {
+				self.comments.SetNode(empty, true)
+				self.comments.Unset()
+			}
 			value = append(value, empty)
 
 			self.next()
@@ -343,11 +357,15 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 		}
 
 		exp := self.parseAssignmentExpression()
-		self.comments.SetNode(exp, true)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(exp, true)
+		}
 
 		value = append(value, exp)
 		if self.token != token.RIGHT_BRACKET {
-			self.comments.Unset()
+			if self.mode&StoreComments != 0 {
+				self.comments.Unset()
+			}
 			self.expect(token.COMMA)
 		}
 	}
@@ -367,7 +385,9 @@ func (self *_parser) parseArgumentList() (argumentList []ast.Expression, idx0, i
 	if self.token != token.RIGHT_PARENTHESIS {
 		for {
 			exp := self.parseAssignmentExpression()
-			self.comments.SetNode(exp, false)
+			if self.mode&StoreComments != 0 {
+				self.comments.SetNode(exp, false)
+			}
 			argumentList = append(argumentList, exp)
 			if self.token != token.COMMA {
 				break
@@ -375,7 +395,9 @@ func (self *_parser) parseArgumentList() (argumentList []ast.Expression, idx0, i
 			self.next()
 		}
 	}
-	self.comments.Unset()
+	if self.mode&StoreComments != 0 {
+		self.comments.Unset()
+	}
 	idx1 = self.expect(token.RIGHT_PARENTHESIS)
 	return
 }
@@ -389,7 +411,9 @@ func (self *_parser) parseCallExpression(left ast.Expression) ast.Expression {
 		RightParenthesis: idx1,
 	}
 
-	self.comments.SetNode(exp, false)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(exp, false)
+	}
 	return exp
 }
 
@@ -442,7 +466,9 @@ func (self *_parser) parseNewExpression() ast.Expression {
 		node.RightParenthesis = idx1
 	}
 
-	self.comments.SetNode(node, false)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(node, false)
+	}
 
 	return node
 }
@@ -456,7 +482,9 @@ func (self *_parser) parseLeftHandSideExpression() ast.Expression {
 		left = self.parsePrimaryExpression()
 	}
 
-	self.comments.SetNode(left, true)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(left, true)
+	}
 
 	for {
 		if self.token == token.PERIOD {
@@ -486,7 +514,9 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 		left = self.parsePrimaryExpression()
 	}
 
-	self.comments.SetNode(left, true)
+	if self.mode&StoreComments != 0 {
+		self.comments.SetNode(left, true)
+	}
 
 	for {
 		if self.token == token.PERIOD {
@@ -514,7 +544,9 @@ func (self *_parser) parsePostfixExpression() ast.Expression {
 		}
 		tkn := self.token
 		idx := self.idx
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 		switch operand.(type) {
 		case *ast.Identifier, *ast.DotExpression, *ast.BracketExpression:
@@ -530,7 +562,9 @@ func (self *_parser) parsePostfixExpression() ast.Expression {
 			Postfix:  true,
 		}
 
-		self.comments.SetNode(exp, true)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(exp, true)
+		}
 
 		return exp
 	}
@@ -546,7 +580,9 @@ func (self *_parser) parseUnaryExpression() ast.Expression {
 	case token.DELETE, token.VOID, token.TYPEOF:
 		tkn := self.token
 		idx := self.idx
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 
 		exp := &ast.UnaryExpression{
@@ -559,7 +595,9 @@ func (self *_parser) parseUnaryExpression() ast.Expression {
 	case token.INCREMENT, token.DECREMENT:
 		tkn := self.token
 		idx := self.idx
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 
 		operand := self.parseUnaryExpression()
@@ -588,7 +626,9 @@ func (self *_parser) parseMultiplicativeExpression() ast.Expression {
 	for self.token == token.MULTIPLY || self.token == token.SLASH ||
 		self.token == token.REMAINDER {
 		tkn := self.token
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 
 		left = &ast.BinaryExpression{
@@ -597,7 +637,9 @@ func (self *_parser) parseMultiplicativeExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 	}
 
 	return left
@@ -609,7 +651,9 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 
 	for self.token == token.PLUS || self.token == token.MINUS {
 		tkn := self.token
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 
 		left = &ast.BinaryExpression{
@@ -618,7 +662,9 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 	}
 
 	return left
@@ -639,7 +685,9 @@ func (self *_parser) parseShiftExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -667,7 +715,9 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 			Comparison: true,
 		}
 
-		self.comments.SetNode(exp, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(exp, false)
+		}
 		return exp
 	case token.INSTANCEOF:
 		tkn := self.token
@@ -679,7 +729,9 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 			Right:    self.parseRelationalExpression(),
 		}
 
-		self.comments.SetNode(exp, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(exp, false)
+		}
 
 		return exp
 	case token.IN:
@@ -695,7 +747,9 @@ func (self *_parser) parseRelationalExpression() ast.Expression {
 			Right:    self.parseRelationalExpression(),
 		}
 
-		self.comments.SetNode(exp, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(exp, false)
+		}
 
 		return exp
 	}
@@ -719,7 +773,9 @@ func (self *_parser) parseEqualityExpression() ast.Expression {
 			Comparison: true,
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -739,7 +795,9 @@ func (self *_parser) parseBitwiseAndExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -759,7 +817,9 @@ func (self *_parser) parseBitwiseExclusiveOrExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -779,7 +839,9 @@ func (self *_parser) parseBitwiseOrExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -799,7 +861,9 @@ func (self *_parser) parseLogicalAndExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -819,7 +883,9 @@ func (self *_parser) parseLogicalOrExpression() ast.Expression {
 			Right:    next(),
 		}
 
-		self.comments.SetNode(left, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(left, false)
+		}
 	}
 
 	return left
@@ -877,7 +943,9 @@ func (self *_parser) parseAssignmentExpression() ast.Expression {
 
 	if operator != 0 {
 		idx := self.idx
-		self.comments.Unset()
+		if self.mode&StoreComments != 0 {
+			self.comments.Unset()
+		}
 		self.next()
 		switch left.(type) {
 		case *ast.Identifier, *ast.DotExpression, *ast.BracketExpression:
@@ -892,7 +960,9 @@ func (self *_parser) parseAssignmentExpression() ast.Expression {
 			Operator: operator,
 			Right:    self.parseAssignmentExpression(),
 		}
-		self.comments.SetNode(exp, false)
+		if self.mode&StoreComments != 0 {
+			self.comments.SetNode(exp, false)
+		}
 
 		return exp
 	}
