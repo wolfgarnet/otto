@@ -11,6 +11,12 @@ type Walker struct {
 	Visitor Visitor
 }
 
+func NewWalker(visitor Visitor) *Walker {
+	return &Walker{
+		Visitor: visitor,
+	}
+}
+
 // Visitor interface for the walker.
 type Visitor interface {
 	VisitArray(walker *Walker, node *ast.ArrayLiteral, metadata []Metadata) Metadata
