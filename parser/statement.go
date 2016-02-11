@@ -327,6 +327,11 @@ func (self *_parser) parseDebuggerStatement() ast.Statement {
 func (self *_parser) parseReturnStatement() ast.Statement {
 	idx := self.expect(token.RETURN)
 
+	var comments []*ast.Comment
+	if self.mode&StoreComments != 0 {
+		comments = self.comments.FetchAll()
+	}
+
 	if !self.scope.inFunction {
 		self.error(idx, "Illegal return statement")
 		self.nextStatement()
@@ -339,6 +344,10 @@ func (self *_parser) parseReturnStatement() ast.Statement {
 
 	if !self.implicitSemicolon && self.token != token.SEMICOLON && self.token != token.RIGHT_BRACE && self.token != token.EOF {
 		node.Argument = self.parseExpression()
+	}
+
+	if self.mode&StoreComments != 0 {
+		self.commentMap.AddComments(node, comments)
 	}
 
 	self.semicolon()
@@ -564,6 +573,12 @@ func (self *_parser) parseFor(initializer ast.Expression) *ast.ForStatement {
 
 func (self *_parser) parseForOrForInStatement() ast.Statement {
 	idx := self.expect(token.FOR)
+
+	var comments []*ast.Comment
+	if self.mode&StoreComments != 0 {
+		comments = self.comments.FetchAll()
+	}
+
 	self.expect(token.LEFT_PARENTHESIS)
 
 	var left []ast.Expression
@@ -603,12 +618,20 @@ func (self *_parser) parseForOrForInStatement() ast.Statement {
 			self.nextStatement()
 			return &ast.BadStatement{From: idx, To: self.idx}
 		}
-		return self.parseForIn(left[0])
+		forin := self.parseForIn(left[0])
+		if self.mode&StoreComments != 0 {
+			self.commentMap.AddComments(forin, comments)
+		}
+		return forin
 	}
 
 	self.expect(token.SEMICOLON)
 	initializer := &ast.SequenceExpression{Sequence: left}
-	return self.parseFor(initializer)
+	forstatement := self.parseFor(initializer)
+	if self.mode&StoreComments != 0 {
+		self.commentMap.AddComments(forstatement, comments)
+	}
+	return forstatement
 }
 
 func (self *_parser) parseVariableStatement() *ast.VariableStatement {
