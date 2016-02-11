@@ -347,8 +347,6 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 			empty := &ast.EmptyExpression{self.idx, self.idx}
 			if self.mode&StoreComments != 0 {
 				self.comments.SetNode(empty, true)
-			}
-			if self.mode&StoreComments != 0 {
 				self.comments.Unset()
 			}
 			value = append(value, empty)

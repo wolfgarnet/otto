@@ -1018,7 +1018,7 @@ func BenchmarkParser(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		parser := newParser("", src)
-		parser.mode = StoreComments
+		//parser.mode = StoreComments
 		parser.parse()
 	}
 }
