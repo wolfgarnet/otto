@@ -667,7 +667,7 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			self.comments.Unset()
 		}
 	}
 
@@ -693,7 +693,7 @@ func (self *_parser) parseShiftExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			self.comments.Unset()
 		}
 	}
 

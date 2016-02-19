@@ -130,6 +130,7 @@ func (c *Comments) ResetLineBreak() {
 // AddComment adds a comment to the view.
 // Depending on the context, comments are added normally or as post line break.
 func (c *Comments) AddComment(comment *Comment) {
+	fmt.Printf("Adding comment\n")
 	if c.wasLineBreak {
 		c.future = append(c.future, comment)
 	} else {
@@ -194,6 +195,15 @@ func (c *Comments) AtLineBreak() {
 	if c.Current != nil {
 		c.applyComments(c.Current, TRAILING)
 	}
+
+	// Promote future to leading comments
+	/*if c.wasLineBreak {
+		for _, c := range c.future {
+			c.Position = LEADING
+		}
+		c.Comments = append(c.Comments, c.future...)
+		c.future = nil
+	}*/
 
 	// Subsequent comments must not be associated with the current node
 	if c.UntilLineBreak {

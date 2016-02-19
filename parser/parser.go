@@ -39,6 +39,7 @@ import (
 	"io"
 	"io/ioutil"
 
+	"fmt"
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/file"
 	"github.com/robertkrimen/otto/token"
@@ -188,7 +189,7 @@ func (self *_parser) parse() (*ast.Program, error) {
 	if false {
 		self.errors.Sort()
 	}
-	self.comments.Unset()
+	//self.comments.Unset()
 	self.comments.CommentMap.AddComments(program, self.comments.FetchAll(), ast.TRAILING)
 
 	return program, self.errors.Err()
@@ -196,6 +197,7 @@ func (self *_parser) parse() (*ast.Program, error) {
 
 func (self *_parser) next() {
 	self.token, self.literal, self.idx = self.scan()
+	fmt.Printf("Token: %v, Literal: %v\n", self.token, self.literal)
 }
 
 func (self *_parser) optionalSemicolon() {

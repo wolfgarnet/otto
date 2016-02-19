@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/token"
 )
@@ -135,6 +136,7 @@ func (self *_parser) parseStatement() ast.Statement {
 		return exp
 	}
 
+	fmt.Printf("OPTIONAL SEMI\n")
 	self.optionalSemicolon()
 
 	statement := &ast.ExpressionStatement{
@@ -654,6 +656,7 @@ func (self *_parser) parseVariableStatement() *ast.VariableStatement {
 	}
 	if self.mode&StoreComments != 0 {
 		self.comments.CommentMap.AddComments(statement, comments, ast.LEADING)
+		self.comments.Unset()
 	}
 	self.semicolon()
 
@@ -765,7 +768,9 @@ func (self *_parser) parseIfStatement() ast.Statement {
 }
 
 func (self *_parser) parseSourceElement() ast.Statement {
-	return self.parseStatement()
+	statement := self.parseStatement()
+	//self.comments.Unset()
+	return statement
 }
 
 func (self *_parser) parseSourceElements() []ast.Statement {
