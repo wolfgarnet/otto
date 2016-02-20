@@ -137,6 +137,7 @@ func (self *_parser) parseStatement() ast.Statement {
 	}
 
 	fmt.Printf("OPTIONAL SEMI\n")
+	self.comments.Unset()
 	self.optionalSemicolon()
 
 	statement := &ast.ExpressionStatement{

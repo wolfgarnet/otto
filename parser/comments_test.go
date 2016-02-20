@@ -8,11 +8,18 @@ import (
 )
 
 func checkComments(actual []*ast.Comment, expected []string, position ast.CommentPosition) error {
-	if len(actual) != len(expected) {
-		return fmt.Errorf("the number of comments is not correct. %v != %v", len(actual), len(expected))
+	var comments []*ast.Comment
+	for _, c := range actual {
+		if c.Position == position {
+			comments = append(comments, c)
+		}
 	}
 
-	for i, v := range actual {
+	if len(comments) != len(expected) {
+		return fmt.Errorf("the number of comments is not correct. %v != %v", len(comments), len(expected))
+	}
+
+	for i, v := range comments {
 		if v.Text != expected[i] {
 			return fmt.Errorf("comments do not match. \"%v\" != \"%v\"\n", v.Text, expected[i])
 		}
@@ -1367,7 +1374,8 @@ b/*comment3*/;
 /*comment4*/c
 	`, nil)
 		is(parser.comments.CommentMap.Size(), 4)
-		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment1", "comment2", "comment3"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment1", "comment2"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment3"}, ast.TRAILING), nil)
 		is(checkComments((parser.comments.CommentMap)[program.Body[1]], []string{"comment4"}, ast.LEADING), nil)
 
 		parser, program = test(`
@@ -1377,7 +1385,9 @@ b/*comment3*/
 /*comment4*/c
 	`, nil)
 		is(parser.comments.CommentMap.Size(), 4)
-		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment1", "comment2", "comment3", "comment4"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment1", "comment2"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment3"}, ast.TRAILING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[1].(*ast.ExpressionStatement).Expression], []string{"comment4"}, ast.LEADING), nil)
 
 	})
 }
@@ -1394,9 +1404,11 @@ func TestParser_comments2(t *testing.T) {
 		}
 
 		parser, program := test(`
-t1
-/*Test*/
-t2
+a + /*comment1*/
+/*comment2*/
+b;/*comment3*/
+/*comment4*/
+c
 `, nil)
 		n := program.Body[0]
 		fmt.Printf("FOUND NODE: %v, number of comments: %v\n", reflect.TypeOf(n), len(parser.comments.CommentMap[n]))

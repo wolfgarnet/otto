@@ -124,13 +124,14 @@ func (c *Comments) Fetch() []*Comment {
 
 // ResetLineBreak marks the beginning of a new statement
 func (c *Comments) ResetLineBreak() {
+	fmt.Printf("RESETTIGN\n")
 	c.wasLineBreak = false
 }
 
 // AddComment adds a comment to the view.
 // Depending on the context, comments are added normally or as post line break.
 func (c *Comments) AddComment(comment *Comment) {
-	fmt.Printf("Adding comment\n")
+	fmt.Printf("Adding comment, %v\n", c.wasLineBreak)
 	if c.wasLineBreak {
 		c.future = append(c.future, comment)
 	} else {
@@ -139,7 +140,13 @@ func (c *Comments) AddComment(comment *Comment) {
 }
 
 func (c *Comments) MarkComments(position CommentPosition) {
+	fmt.Printf("Marking comments as %v\n", position)
 	for _, c := range c.Comments {
+		if c.Position == TBD {
+			c.Position = position
+		}
+	}
+	for _, c := range c.future {
 		if c.Position == TBD {
 			c.Position = position
 		}
@@ -169,6 +176,7 @@ func (c *Comments) SetExpression(node Node, untilLineBreak bool) {
 		c.Current = node
 		return
 	}
+	fmt.Printf("Current node is %v\n", node)
 
 	c.Current = node
 	c.UntilLineBreak = untilLineBreak
@@ -177,6 +185,7 @@ func (c *Comments) SetExpression(node Node, untilLineBreak bool) {
 	// and any "future" comments must be marked as regular ones.
 	c.applyComments(node, TRAILING)
 	if c.wasLineBreak {
+		fmt.Printf("Moving %v comments; %v\n", len(c.future), c.future)
 		c.Comments = append(c.Comments, c.future...)
 		c.future = nil
 		c.wasLineBreak = false

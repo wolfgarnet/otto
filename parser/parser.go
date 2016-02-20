@@ -196,17 +196,21 @@ func (self *_parser) parse() (*ast.Program, error) {
 }
 
 func (self *_parser) next() {
+	//self.comments.ResetLineBreak()
 	self.token, self.literal, self.idx = self.scan()
 	fmt.Printf("Token: %v, Literal: %v\n", self.token, self.literal)
 }
 
 func (self *_parser) optionalSemicolon() {
+	fmt.Printf("SEMI COLON???\n")
 	if self.token == token.SEMICOLON {
+		fmt.Printf("SEMI COLON 1!\n")
 		self.next()
 		return
 	}
 
 	if self.implicitSemicolon {
+		fmt.Printf("SEMI COLON 2!\n")
 		self.implicitSemicolon = false
 		return
 	}

@@ -642,7 +642,7 @@ func (self *_parser) parseMultiplicativeExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.Unset()
+			//self.comments.Unset()
 		}
 	}
 
@@ -667,7 +667,7 @@ func (self *_parser) parseAdditiveExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.Unset()
+			//self.comments.Unset()
 		}
 	}
 
@@ -693,7 +693,7 @@ func (self *_parser) parseShiftExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.Unset()
+			//self.comments.Unset()
 		}
 	}
 
@@ -800,7 +800,7 @@ func (self *_parser) parseBitwiseAndExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			//self.comments.SetExpression(left, false)
 		}
 	}
 
@@ -822,7 +822,7 @@ func (self *_parser) parseBitwiseExclusiveOrExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			//self.comments.SetExpression(left, false)
 		}
 	}
 
@@ -844,7 +844,7 @@ func (self *_parser) parseBitwiseOrExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			//self.comments.SetExpression(left, false)
 		}
 	}
 
@@ -866,7 +866,7 @@ func (self *_parser) parseLogicalAndExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			//self.comments.SetExpression(left, false)
 		}
 	}
 
@@ -888,7 +888,7 @@ func (self *_parser) parseLogicalOrExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(left, false)
+			//self.comments.SetExpression(left, false)
 		}
 	}
 
