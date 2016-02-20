@@ -206,13 +206,10 @@ func (c *Comments) AtLineBreak() {
 	}
 
 	// Promote future to leading comments
-	/*if c.wasLineBreak {
-		for _, c := range c.future {
-			c.Position = LEADING
-		}
+	if c.wasLineBreak {
 		c.Comments = append(c.Comments, c.future...)
 		c.future = nil
-	}*/
+	}
 
 	// Subsequent comments must not be associated with the current node
 	if c.UntilLineBreak {

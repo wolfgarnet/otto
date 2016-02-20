@@ -1403,11 +1403,9 @@ func TestParser_comments2(t *testing.T) {
 		}
 
 		parser, program := test(`
-a + /*comment1*/
-/*comment2*/
-b/*comment3*/
-/*comment4*/
-c
+t1;
+/*Test*/
+t2
 `, nil)
 		n := program.Body[0].(*ast.ExpressionStatement).Expression
 		fmt.Printf("FOUND NODE: %v, number of comments: %v\n", reflect.TypeOf(n), len(parser.comments.CommentMap[n]))
