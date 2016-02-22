@@ -89,7 +89,9 @@ type Comments struct {
 	// CommentMap is a reference to the parser comment map
 	CommentMap CommentMap
 
-	special bool
+	processingExpression bool
+
+	afterBlock bool
 }
 
 func NewComments() *Comments {
@@ -132,27 +134,31 @@ func (c *Comments) ResetLineBreak() {
 	c.wasLineBreak = false
 }
 
-func (c *Comments) Special() {
-	c.special = true
+func (c *Comments) ProcessExpression() {
+	c.processingExpression = true
 	c.wasLineBreak = false
+}
+
+func (c *Comments) AfterBlock() {
+	c.afterBlock = true
 }
 
 // AddComment adds a comment to the view.
 // Depending on the context, comments are added normally or as post line break.
 func (c *Comments) AddComment(comment *Comment) {
 	fmt.Printf("Adding comment '%v', %v(CURRENT:%v)\n", comment.Text, c.wasLineBreak, c.Current)
-	if c.special {
+	if c.processingExpression {
 		if !c.wasLineBreak {
 			c.Comments = append(c.Comments, comment)
 		} else {
 			c.future = append(c.future, comment)
 		}
-		return
-	}
-	if !c.wasLineBreak || c.Current == nil {
-		c.Comments = append(c.Comments, comment)
 	} else {
-		c.future = append(c.future, comment)
+		if !c.wasLineBreak || (c.Current == nil && !c.afterBlock) {
+			c.Comments = append(c.Comments, comment)
+		} else {
+			c.future = append(c.future, comment)
+		}
 	}
 }
 
@@ -179,7 +185,8 @@ func (c *Comments) Unset() {
 		c.Current = nil
 	}
 	c.wasLineBreak = false
-	c.special = false
+	c.processingExpression = false
+	c.afterBlock = false
 }
 
 // SetNode sets the current node of the view.

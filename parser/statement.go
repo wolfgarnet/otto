@@ -21,7 +21,7 @@ func (self *_parser) parseBlockStatement() *ast.BlockStatement {
 	if self.mode&StoreComments != 0 {
 		self.comments.Unset()
 		self.comments.CommentMap.AddComments(node, self.comments.FetchAll(), ast.FINAL)
-		self.comments.SetExpression(node, false)
+		self.comments.AfterBlock()
 	}
 
 	node.RightBrace = self.expect(token.RIGHT_BRACE)
