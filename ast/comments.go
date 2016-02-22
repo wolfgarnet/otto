@@ -88,6 +88,8 @@ type Comments struct {
 	wasLineBreak bool
 	// CommentMap is a reference to the parser comment map
 	CommentMap CommentMap
+
+	special bool
 }
 
 func NewComments() *Comments {
@@ -130,22 +132,35 @@ func (c *Comments) ResetLineBreak() {
 	c.wasLineBreak = false
 }
 
+func (c *Comments) Special() {
+	c.special = true
+	c.wasLineBreak = false
+}
+
 // AddComment adds a comment to the view.
 // Depending on the context, comments are added normally or as post line break.
 func (c *Comments) AddComment(comment *Comment) {
-	fmt.Printf("Adding comment, %v\n", c.wasLineBreak)
-	if c.wasLineBreak {
-		c.future = append(c.future, comment)
-	} else {
+	fmt.Printf("Adding comment '%v', %v(CURRENT:%v)\n", comment.Text, c.wasLineBreak, c.Current)
+	if c.special {
+		if !c.wasLineBreak {
+			c.Comments = append(c.Comments, comment)
+		} else {
+			c.future = append(c.future, comment)
+		}
+		return
+	}
+	if !c.wasLineBreak || c.Current == nil {
 		c.Comments = append(c.Comments, comment)
+	} else {
+		c.future = append(c.future, comment)
 	}
 }
 
 func (c *Comments) MarkComments(position CommentPosition) {
 	fmt.Printf("Marking comments as %v\n", position)
-	for _, c := range c.Comments {
-		if c.Position == TBD {
-			c.Position = position
+	for _, comment := range c.Comments {
+		if comment.Position == TBD {
+			comment.Position = position
 		}
 	}
 	for _, c := range c.future {
@@ -158,11 +173,13 @@ func (c *Comments) MarkComments(position CommentPosition) {
 // Unset the current node and apply the scanned comments.
 // Also marks the view as the next line.
 func (c *Comments) Unset() {
+	fmt.Printf("Unsetting\n")
 	if c.Current != nil {
-		c.applyComments(c.Current, TRAILING)
+		c.applyComments(c.Current, c.Current, TRAILING)
 		c.Current = nil
 	}
 	c.wasLineBreak = false
+	c.special = false
 }
 
 // SetNode sets the current node of the view.
@@ -178,24 +195,45 @@ func (c *Comments) SetExpression(node Node, untilLineBreak bool) {
 		c.Current = node
 		return
 	}
-	fmt.Printf("Current node is %v\n", node)
-
+	fmt.Printf("Current node is %v and previous is %v\n", node, c.Current)
+	previous := c.Current
 	c.Current = node
 	c.UntilLineBreak = untilLineBreak
 
 	// If a line break occurred, those regular comments must be linked to that node,
 	// and any "future" comments must be marked as regular ones.
-	c.applyComments(node, TRAILING)
+	c.applyComments(node, previous, TRAILING)
 	if c.wasLineBreak {
-		fmt.Printf("Moving %v comments; %v\n", len(c.future), c.future)
-		c.Comments = append(c.Comments, c.future...)
+		//fmt.Printf("Moving %v comments; %v\n", len(c.future), c.future)
+		//c.Comments = append(c.Comments, c.future...)
+		//c.future = nil
+		//c.wasLineBreak = false
+	}
+}
+
+func (c *Comments) THING(node Node) {
+	c.applyComments(node, nil, TRAILING)
+}
+
+func (c *Comments) applyComments(node, previous Node, position CommentPosition) {
+	if previous != nil {
+		fmt.Printf("Applying %v(%v) comments to previous, %v\n", len(c.Comments), c.Comments, previous)
+		c.CommentMap.AddComments(previous, c.Comments, position)
+		c.Comments = nil
+	} else {
+		fmt.Printf("Applying %v(%v) comments to current, %v\n", len(c.Comments), c.Comments, node)
+		c.CommentMap.AddComments(node, c.Comments, position)
+		c.Comments = nil
+	}
+	if previous != nil {
+		fmt.Printf("Applying additionally %v(%v) comments to current, %v\n", len(c.future), c.future, node)
+		c.CommentMap.AddComments(node, c.future, position)
 		c.future = nil
-		c.wasLineBreak = false
 	}
 }
 
 // Make sure the gathered comments are added
-func (c *Comments) applyComments(node Node, position CommentPosition) {
+func (c *Comments) applyComments1(node Node, position CommentPosition) {
 	c.CommentMap.AddComments(node, c.Comments, position)
 	c.Comments = nil
 }
@@ -205,18 +243,18 @@ func (c *Comments) applyComments(node Node, position CommentPosition) {
 func (c *Comments) AtLineBreak() {
 	fmt.Printf("At line break\n")
 	if c.Current != nil {
-		c.applyComments(c.Current, TRAILING)
+		//c.applyComments(c.Current, TRAILING)
 	}
 
 	// Promote future to leading comments
 	if c.wasLineBreak {
-		c.Comments = append(c.Comments, c.future...)
-		c.future = nil
+		//c.Comments = append(c.Comments, c.future...)
+		//c.future = nil
 	}
 
 	// Subsequent comments must not be associated with the current node
 	if c.UntilLineBreak {
-		c.Current = nil
+		//c.Current = nil
 	}
 
 	c.wasLineBreak = true
