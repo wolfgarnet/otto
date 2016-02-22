@@ -108,7 +108,6 @@ func (c *Comments) String() string {
 // FetchAll returns all the currently scanned comments,
 // including those from the next line
 func (c *Comments) FetchAll() []*Comment {
-	fmt.Printf("Fetching %v + %v comments\n", len(c.Comments), len(c.future))
 	defer func() {
 		c.Comments = nil
 		c.future = nil
@@ -119,7 +118,6 @@ func (c *Comments) FetchAll() []*Comment {
 
 // Fetch returns all the currently scanned comments
 func (c *Comments) Fetch() []*Comment {
-	fmt.Printf("Fetching %v comments\n", len(c.Comments))
 	defer func() {
 		c.Comments = nil
 	}()
@@ -129,7 +127,6 @@ func (c *Comments) Fetch() []*Comment {
 
 // ResetLineBreak marks the beginning of a new statement
 func (c *Comments) ResetLineBreak() {
-	fmt.Printf("RESETTIGN\n")
 	c.wasLineBreak = false
 }
 
@@ -147,7 +144,6 @@ func (c *Comments) AfterBlock() {
 // AddComment adds a comment to the view.
 // Depending on the context, comments are added normally or as post line break.
 func (c *Comments) AddComment(comment *Comment) {
-	fmt.Printf("Adding comment '%v', %v(CURRENT:%v)\n", comment.Text, c.wasLineBreak, c.Current)
 	if c.primary {
 		if !c.wasLineBreak {
 			c.Comments = append(c.Comments, comment)
@@ -165,7 +161,6 @@ func (c *Comments) AddComment(comment *Comment) {
 
 // MarkComments will mark the found comments as the given position.
 func (c *Comments) MarkComments(position CommentPosition) {
-	fmt.Printf("Marking comments as %v\n", position)
 	for _, comment := range c.Comments {
 		if comment.Position == TBD {
 			comment.Position = position
@@ -181,7 +176,6 @@ func (c *Comments) MarkComments(position CommentPosition) {
 // Unset the current node and apply the comments to the current expression.
 // Resets context variables.
 func (c *Comments) Unset() {
-	fmt.Printf("Unsetting\n")
 	if c.Current != nil {
 		c.applyComments(c.Current, c.Current, TRAILING)
 		c.Current = nil
@@ -203,7 +197,6 @@ func (c *Comments) SetExpression(node Expression) {
 		c.Current = node
 		return
 	}
-	fmt.Printf("Current node is %v and previous is %v\n", node, c.Current)
 	previous := c.Current
 	c.Current = node
 
@@ -220,18 +213,15 @@ func (c *Comments) PostProcessNode(node Node) {
 // based on the context.
 func (c *Comments) applyComments(node, previous Node, position CommentPosition) {
 	if previous != nil {
-		fmt.Printf("Applying %v(%v) comments to previous, %v\n", len(c.Comments), c.Comments, previous)
 		c.CommentMap.AddComments(previous, c.Comments, position)
 		c.Comments = nil
 	} else {
-		fmt.Printf("Applying %v(%v) comments to current, %v\n", len(c.Comments), c.Comments, node)
 		c.CommentMap.AddComments(node, c.Comments, position)
 		c.Comments = nil
 	}
 	// Only apply the future comments to the node if the previous is set.
 	// This is for detecting end of line comments and which node comments on the following lines belongs to
 	if previous != nil {
-		fmt.Printf("Applying additionally %v(%v) comments to current, %v\n", len(c.future), c.future, node)
 		c.CommentMap.AddComments(node, c.future, position)
 		c.future = nil
 	}
@@ -239,7 +229,6 @@ func (c *Comments) applyComments(node, previous Node, position CommentPosition) 
 
 // AtLineBreak will mark a line break
 func (c *Comments) AtLineBreak() {
-	fmt.Printf("At line break\n")
 	c.wasLineBreak = true
 }
 

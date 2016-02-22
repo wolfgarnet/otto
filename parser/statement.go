@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/token"
 )
@@ -99,8 +98,6 @@ func (self *_parser) parseStatement() ast.Statement {
 
 	var comments []*ast.Comment
 	if self.mode&StoreComments != 0 {
-		fmt.Printf("Expression statement fetch all!\n")
-		//self.comments.Unset()
 		comments = self.comments.FetchAll()
 	}
 
@@ -139,8 +136,6 @@ func (self *_parser) parseStatement() ast.Statement {
 		return exp
 	}
 
-	fmt.Printf("OPTIONAL SEMI\n")
-	//self.comments.Unset()
 	self.optionalSemicolon()
 
 	statement := &ast.ExpressionStatement{
