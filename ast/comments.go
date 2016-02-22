@@ -81,9 +81,7 @@ type Comments struct {
 	// future lists the comments after a line break during a sequence of comments
 	future []*Comment
 	// Current is node for which comments are linked to
-	Current Node
-	// Maybe not necessary
-	UntilLineBreak bool
+	Current Expression
 	// wasLineBreak determines if a line break occured while scanning for comments
 	wasLineBreak bool
 	// CommentMap is a reference to the parser comment map
@@ -193,7 +191,7 @@ func (c *Comments) Unset() {
 // It is skipped if the node is already set or if it is a part of the previous node.
 // Scanned comments are linked to this node and future comments are promoted to normal comments.
 // untilLineBreak marks the node as valid only until the next line break.
-func (c *Comments) SetExpression(node Node, untilLineBreak bool) {
+func (c *Comments) SetExpression(node Expression, untilLineBreak bool) {
 	// Skipping same node
 	if c.Current == node {
 		return
@@ -205,7 +203,6 @@ func (c *Comments) SetExpression(node Node, untilLineBreak bool) {
 	fmt.Printf("Current node is %v and previous is %v\n", node, c.Current)
 	previous := c.Current
 	c.Current = node
-	c.UntilLineBreak = untilLineBreak
 
 	// If a line break occurred, those regular comments must be linked to that node,
 	// and any "future" comments must be marked as regular ones.
@@ -249,21 +246,6 @@ func (c *Comments) applyComments1(node Node, position CommentPosition) {
 // Also normal comments will be applied to the current node.
 func (c *Comments) AtLineBreak() {
 	fmt.Printf("At line break\n")
-	if c.Current != nil {
-		//c.applyComments(c.Current, TRAILING)
-	}
-
-	// Promote future to leading comments
-	if c.wasLineBreak {
-		//c.Comments = append(c.Comments, c.future...)
-		//c.future = nil
-	}
-
-	// Subsequent comments must not be associated with the current node
-	if c.UntilLineBreak {
-		//c.Current = nil
-	}
-
 	c.wasLineBreak = true
 }
 
