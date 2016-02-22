@@ -355,8 +355,7 @@ t1 = "BLA DE VLA"
 t2 = "Nothing happens."
 		`, nil)
 		is(parser.comments.CommentMap.Size(), 1)
-		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.StringLiteral)], []string{}, ast.TRAILING), nil)
-		is(checkComments((parser.comments.CommentMap)[program.Body[1].(*ast.ExpressionStatement)], []string{"Test"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.StringLiteral)], []string{"Test"}, ast.TRAILING), nil)
 
 		// Line breaks pt 2
 		parser, program = test(`
@@ -383,8 +382,26 @@ t1 = "BLA DE VLA" /*Test*/
 t2 = "Nothing happens."
 		`, nil)
 		is(parser.comments.CommentMap.Size(), 2)
-		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.StringLiteral)], []string{"Test"}, ast.TRAILING), nil)
-		is(checkComments((parser.comments.CommentMap)[program.Body[1].(*ast.ExpressionStatement)], []string{"Test2"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.StringLiteral)], []string{"Test", "Test2"}, ast.TRAILING), nil)
+
+		// Line breaks pt 5
+		parser, program = test(`
+t1 = "BLA DE VLA";
+/*Test*/
+t2 = "Nothing happens."
+		`, nil)
+		is(parser.comments.CommentMap.Size(), 1)
+		is(checkComments((parser.comments.CommentMap)[program.Body[1]], []string{"Test"}, ast.LEADING), nil)
+
+		// Line breaks pt 6
+		parser, program = test(`
+t1 = "BLA DE VLA"; /*Test*/
+/*Test2*/
+t2 = "Nothing happens."
+		`, nil)
+		is(parser.comments.CommentMap.Size(), 2)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression], []string{"Test"}, ast.TRAILING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[1]], []string{"Test2"}, ast.LEADING), nil)
 
 		// Misc
 		parser, program = test(`
@@ -680,8 +697,18 @@ for(var i = 0 in  obj) {
 // comment
 	`, nil)
 		is(parser.comments.CommentMap.Size(), 1)
-		//is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ForInStatement).Body], []string{" comment"}, ast.TRAILING), nil)
-		is(checkComments((parser.comments.CommentMap)[program], []string{" comment"}, ast.TRAILING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ForInStatement).Body], []string{" comment"}, ast.TRAILING), nil)
+
+		// ForIn pt 8
+		parser, program = test(`
+for(var i = 0 in  obj) {
+	a
+}
+// comment
+c
+	`, nil)
+		is(parser.comments.CommentMap.Size(), 1)
+		is(checkComments((parser.comments.CommentMap)[program.Body[1]], []string{" comment"}, ast.LEADING), nil)
 
 		// Block
 		parser, program = test(`
@@ -1403,11 +1430,13 @@ func TestParser_comments2(t *testing.T) {
 		}
 
 		parser, program := test(`
-t1;
-/*Test*/
-t2
+for(var i = 0 in  obj) {
+	a
+}
+/* comment*/
+c
 `, nil)
-		n := program.Body[0].(*ast.ExpressionStatement).Expression
+		n := program.Body[0]
 		fmt.Printf("FOUND NODE: %v, number of comments: %v\n", reflect.TypeOf(n), len(parser.comments.CommentMap[n]))
 		displayComments(parser.comments.CommentMap)
 

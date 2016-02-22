@@ -105,6 +105,7 @@ func (c *Comments) String() string {
 // FetchAll returns all the currently scanned comments,
 // including those from the next line
 func (c *Comments) FetchAll() []*Comment {
+	fmt.Printf("Fetching %v + %v comments\n", len(c.Comments), len(c.future))
 	defer func() {
 		c.Comments = nil
 		c.future = nil
@@ -115,6 +116,7 @@ func (c *Comments) FetchAll() []*Comment {
 
 // Fetch returns all the currently scanned comments
 func (c *Comments) Fetch() []*Comment {
+	fmt.Printf("Fetching %v comments\n", len(c.Comments))
 	defer func() {
 		c.Comments = nil
 	}()
@@ -201,6 +203,7 @@ func (c *Comments) applyComments(node Node, position CommentPosition) {
 // AtLineBreak will mark subsequent comments as future.
 // Also normal comments will be applied to the current node.
 func (c *Comments) AtLineBreak() {
+	fmt.Printf("At line break\n")
 	if c.Current != nil {
 		c.applyComments(c.Current, TRAILING)
 	}
