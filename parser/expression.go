@@ -524,7 +524,7 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 	} else {
 		if self.mode&StoreComments != 0 {
 			self.comments.MarkComments(ast.LEADING)
-			self.comments.ProcessExpression()
+			self.comments.MarkPrimary()
 		}
 		left = self.parsePrimaryExpression()
 	}

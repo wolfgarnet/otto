@@ -68,9 +68,9 @@ func (self *_parser) parseStatement() ast.Statement {
 	case token.IF:
 		return self.parseIfStatement()
 	case token.DO:
-		dw := self.parseDoWhileStatement()
-		self.comments.THING(dw)
-		return dw
+		statement := self.parseDoWhileStatement()
+		self.comments.PostProcessNode(statement)
+		return statement
 	case token.WHILE:
 		return self.parseWhileStatement()
 	case token.FOR:
