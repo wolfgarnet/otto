@@ -1416,6 +1416,15 @@ b/*comment3*/
 		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.BinaryExpression).Right], []string{"comment3"}, ast.TRAILING), nil)
 		is(checkComments((parser.comments.CommentMap)[program.Body[1]], []string{"comment4"}, ast.LEADING), nil)
 
+		// New
+		parser, program = test(`
+a = /*comment1*/new /*comment2*/ obj/*comment3*/()
+	`, nil)
+		is(parser.comments.CommentMap.Size(), 3)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right], []string{"comment1"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.NewExpression).Callee], []string{"comment2"}, ast.LEADING), nil)
+		is(checkComments((parser.comments.CommentMap)[program.Body[0].(*ast.ExpressionStatement).Expression.(*ast.AssignExpression).Right.(*ast.NewExpression).Callee], []string{"comment3"}, ast.TRAILING), nil)
+
 	})
 }
 
@@ -1431,8 +1440,7 @@ func TestParser_comments2(t *testing.T) {
 		}
 
 		parser, program := test(`
-q=2;// Hej
-v = 0
+a = /*comment1*/new /*comment2*/ obj/*comment3*/()
 `, nil)
 		n := program.Body[0]
 		fmt.Printf("FOUND NODE: %v, number of comments: %v\n", reflect.TypeOf(n), len(parser.comments.CommentMap[n]))

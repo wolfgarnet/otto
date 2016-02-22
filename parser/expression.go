@@ -490,6 +490,10 @@ func (self *_parser) parseLeftHandSideExpression() ast.Expression {
 	if self.token == token.NEW {
 		left = self.parseNewExpression()
 	} else {
+		if self.mode&StoreComments != 0 {
+			self.comments.MarkComments(ast.LEADING)
+			self.comments.MarkPrimary()
+		}
 		left = self.parsePrimaryExpression()
 	}
 
@@ -520,7 +524,16 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 
 	var left ast.Expression
 	if self.token == token.NEW {
+		var newComments []*ast.Comment
+		if self.mode&StoreComments != 0 {
+			newComments = self.comments.FetchAll()
+			self.comments.MarkComments(ast.LEADING)
+			self.comments.MarkPrimary()
+		}
 		left = self.parseNewExpression()
+		if self.mode&StoreComments != 0 {
+			self.comments.CommentMap.AddComments(left, newComments, ast.LEADING)
+		}
 	} else {
 		if self.mode&StoreComments != 0 {
 			self.comments.MarkComments(ast.LEADING)
