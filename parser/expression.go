@@ -218,10 +218,6 @@ func (self *_parser) parseVariableDeclarationList(var_ file.Idx) []ast.Expressio
 			self.comments.MarkComments(ast.LEADING)
 		}
 		decl := self.parseVariableDeclaration(&declarationList)
-		// FIXME IS THIS NEEDED? IS SET!!!
-		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(decl, false)
-		}
 		list = append(list, decl)
 		if self.token != token.COMMA {
 			break
