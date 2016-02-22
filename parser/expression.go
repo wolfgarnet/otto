@@ -21,7 +21,7 @@ func (self *_parser) parseIdentifier() *ast.Identifier {
 	}
 
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(exp, false)
+		self.comments.SetExpression(exp)
 	}
 
 	return exp
@@ -190,7 +190,7 @@ func (self *_parser) parseVariableDeclaration(declarationList *[]*ast.VariableEx
 		Idx:  idx,
 	}
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(node, false)
+		self.comments.SetExpression(node)
 	}
 
 	if declarationList != nil {
@@ -316,7 +316,7 @@ func (self *_parser) parseObjectProperty() ast.Property {
 	}
 
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(exp.Value, true)
+		self.comments.SetExpression(exp.Value)
 	}
 	return exp
 }
@@ -355,7 +355,7 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 			empty := &ast.EmptyExpression{self.idx, self.idx}
 
 			if self.mode&StoreComments != 0 {
-				self.comments.SetExpression(empty, true)
+				self.comments.SetExpression(empty)
 				self.comments.Unset()
 			}
 			value = append(value, empty)
@@ -364,9 +364,6 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 		}
 
 		exp := self.parseAssignmentExpression()
-		if self.mode&StoreComments != 0 {
-			//self.comments.SetExpression(exp, true)
-		}
 
 		value = append(value, exp)
 		if self.token != token.RIGHT_BRACKET {
@@ -397,7 +394,7 @@ func (self *_parser) parseArgumentList() (argumentList []ast.Expression, idx0, i
 		for {
 			exp := self.parseAssignmentExpression()
 			if self.mode&StoreComments != 0 {
-				self.comments.SetExpression(exp, false)
+				self.comments.SetExpression(exp)
 			}
 			argumentList = append(argumentList, exp)
 			if self.token != token.COMMA {
@@ -426,7 +423,7 @@ func (self *_parser) parseCallExpression(left ast.Expression) ast.Expression {
 	}
 
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(exp, false)
+		self.comments.SetExpression(exp)
 	}
 	return exp
 }
@@ -481,7 +478,7 @@ func (self *_parser) parseNewExpression() ast.Expression {
 	}
 
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(node, false)
+		self.comments.SetExpression(node)
 	}
 
 	return node
@@ -497,7 +494,7 @@ func (self *_parser) parseLeftHandSideExpression() ast.Expression {
 	}
 
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(left, true)
+		self.comments.SetExpression(left)
 	}
 
 	for {
@@ -533,7 +530,7 @@ func (self *_parser) parseLeftHandSideExpressionAllowCall() ast.Expression {
 	}
 
 	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(left, true)
+		self.comments.SetExpression(left)
 	}
 
 	for {
@@ -581,7 +578,7 @@ func (self *_parser) parsePostfixExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(exp, true)
+			self.comments.SetExpression(exp)
 		}
 
 		return exp
@@ -964,7 +961,7 @@ func (self *_parser) parseAssignmentExpression() ast.Expression {
 		}
 
 		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(exp, false)
+			self.comments.SetExpression(exp)
 		}
 
 		return exp

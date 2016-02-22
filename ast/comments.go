@@ -191,7 +191,7 @@ func (c *Comments) Unset() {
 // It is skipped if the node is already set or if it is a part of the previous node.
 // Scanned comments are linked to this node and future comments are promoted to normal comments.
 // untilLineBreak marks the node as valid only until the next line break.
-func (c *Comments) SetExpression(node Expression, untilLineBreak bool) {
+func (c *Comments) SetExpression(node Expression) {
 	// Skipping same node
 	if c.Current == node {
 		return
@@ -207,12 +207,6 @@ func (c *Comments) SetExpression(node Expression, untilLineBreak bool) {
 	// If a line break occurred, those regular comments must be linked to that node,
 	// and any "future" comments must be marked as regular ones.
 	c.applyComments(node, previous, TRAILING)
-	if c.wasLineBreak {
-		//fmt.Printf("Moving %v comments; %v\n", len(c.future), c.future)
-		//c.Comments = append(c.Comments, c.future...)
-		//c.future = nil
-		//c.wasLineBreak = false
-	}
 }
 
 func (c *Comments) THING(node Node) {
