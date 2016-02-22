@@ -43,10 +43,6 @@ func (self *_parser) parseEmptyStatement() ast.Statement {
 func (self *_parser) parseStatementList() (list []ast.Statement) {
 	for self.token != token.RIGHT_BRACE && self.token != token.EOF {
 		statement := self.parseStatement()
-		if self.mode&StoreComments != 0 {
-			// FIXME NOT AN EXPRESSION
-			self.comments.SetExpression(statement, false)
-		}
 		list = append(list, statement)
 	}
 
@@ -504,10 +500,6 @@ func (self *_parser) parseCaseStatement() *ast.CaseStatement {
 			break
 		}
 		consequent := self.parseStatement()
-		if self.mode&StoreComments != 0 {
-			// FIXME NOT AN EXPRESSION
-			self.comments.SetExpression(consequent, false)
-		}
 		node.Consequent = append(node.Consequent, consequent)
 	}
 
@@ -535,10 +527,6 @@ func (self *_parser) parseForIn(into ast.Expression) *ast.ForInStatement {
 	source := self.parseExpression()
 	self.expect(token.RIGHT_PARENTHESIS)
 	body := self.parseIterationStatement()
-	// FIXME NOT AN EXPRESSION
-	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(body, false)
-	}
 
 	forin := &ast.ForInStatement{
 		Into:   into,
@@ -557,9 +545,6 @@ func (self *_parser) parseFor(initializer ast.Expression) *ast.ForStatement {
 
 	if self.token != token.SEMICOLON {
 		test = self.parseExpression()
-		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(test, false)
-		}
 	}
 	if self.mode&StoreComments != 0 {
 		self.comments.Unset()
@@ -568,16 +553,9 @@ func (self *_parser) parseFor(initializer ast.Expression) *ast.ForStatement {
 
 	if self.token != token.RIGHT_PARENTHESIS {
 		update = self.parseExpression()
-		if self.mode&StoreComments != 0 {
-			self.comments.SetExpression(update, false)
-		}
 	}
 	self.expect(token.RIGHT_PARENTHESIS)
 	body := self.parseIterationStatement()
-	// FIXME NOT AN EXPRESSION
-	if self.mode&StoreComments != 0 {
-		self.comments.SetExpression(body, false)
-	}
 
 	forstatement := &ast.ForStatement{
 		Initializer: initializer,
