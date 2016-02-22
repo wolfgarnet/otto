@@ -190,8 +190,10 @@ func (self *_parser) parse() (*ast.Program, error) {
 	if false {
 		self.errors.Sort()
 	}
-	//self.comments.Unset()
-	self.comments.CommentMap.AddComments(program, self.comments.FetchAll(), ast.TRAILING)
+
+	if self.mode&StoreComments != 0 {
+		self.comments.CommentMap.AddComments(program, self.comments.FetchAll(), ast.TRAILING)
+	}
 
 	return program, self.errors.Err()
 }
