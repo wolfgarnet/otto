@@ -452,6 +452,9 @@ func (v *VisitorImpl) VisitNumber(w *Walker, node *ast.NumberLiteral, metadata [
 }
 
 func (v *VisitorImpl) VisitObject(w *Walker, node *ast.ObjectLiteral, metadata []Metadata) Metadata {
+	for _, v := range node.Value {
+		w.Walk(v.Value, metadata)
+	}
 	return CurrentMetadata(metadata)
 }
 
@@ -498,8 +501,12 @@ func (v *VisitorImpl) VisitThrow(w *Walker, node *ast.ThrowStatement, metadata [
 
 func (v *VisitorImpl) VisitTry(w *Walker, node *ast.TryStatement, metadata []Metadata) Metadata {
 	w.Walk(node.Body, metadata)
-	w.Walk(node.Catch, metadata)
-	w.Walk(node.Finally, metadata)
+	if node.Catch != nil {
+		w.Walk(node.Catch, metadata)
+	}
+	if node.Finally != nil {
+		w.Walk(node.Finally, metadata)
+	}
 
 	return CurrentMetadata(metadata)
 }
