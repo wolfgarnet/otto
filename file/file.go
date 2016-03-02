@@ -126,6 +126,7 @@ func NewFile(filename, src string, base int) *File {
 func (self *File) Position(idx Idx) *Position {
 	position := &Position{}
 	offset := int(idx) - self.base
+	fmt.Printf("OFFSET: %v, LEN: %v\n", offset, len(self.src))
 	src := self.src[:offset]
 	position.Filename = self.name
 	position.Offset = offset
