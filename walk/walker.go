@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/file"
+	"runtime/debug"
 )
 
 // Walker can walk a given AST with a visitor
@@ -11,12 +12,14 @@ type Walker struct {
 	Visitor         Visitor
 	Current, Parent ast.Node
 	CatchPanic      bool
+	program         *ast.Program
 }
 
 func NewWalker(visitor Visitor) *Walker {
 	return &Walker{
 		Visitor:    visitor,
 		CatchPanic: false,
+		program:    nil,
 	}
 }
 
@@ -68,6 +71,14 @@ type Visitor interface {
 	VisitWith(walker *Walker, node *ast.WithStatement, metadata []Metadata) Metadata
 }
 
+func (w *Walker) GetPosition(idx file.Idx) *file.Position {
+	if w.program == nil {
+		return nil
+	}
+
+	return w.program.File.Position(idx)
+}
+
 // Begin the walk of the given AST node
 func (w *Walker) Begin(node ast.Node) {
 	if w.CatchPanic {
@@ -91,6 +102,7 @@ func (w *Walker) Begin(node ast.Node) {
 						fmt.Printf("Unknown position!\n")
 					}
 				}
+				fmt.Printf("%s\n", debug.Stack())
 			}
 		}()
 	}
@@ -255,6 +267,7 @@ type VisitorImpl struct {
 }
 
 func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Metadata) Metadata {
+	w.program = node
 	for _, e := range node.Body {
 		w.Walk(e, metadata)
 	}
