@@ -230,6 +230,7 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) Metadata {
 	case *ast.ObjectLiteral:
 		return w.Visitor.VisitObject(w, n, metadata)
 	case *ast.Program:
+		w.program = node
 		return w.Visitor.VisitProgram(w, n, metadata)
 	case *ast.ReturnStatement:
 		return w.Visitor.VisitReturn(w, n, metadata)
@@ -267,7 +268,6 @@ type VisitorImpl struct {
 }
 
 func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Metadata) Metadata {
-	w.program = node
 	for _, e := range node.Body {
 		w.Walk(e, metadata)
 	}
