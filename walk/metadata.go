@@ -57,6 +57,18 @@ func ParentMetadata(metadata []Metadata) Metadata {
 	return metadata[l-2]
 }
 
+func FindParentStatement(metadata []Metadata) ast.Statement {
+	for i := len(metadata) - 1; i >= 0; i-- {
+		parent := metadata[i][NodeField]
+		statement, ok := parent.(ast.Statement)
+		if ok {
+			return statement
+		}
+	}
+
+	return nil
+}
+
 // String displays information about the metadata
 func (md Metadata) String() string {
 	return fmt.Sprintf("{node:%v}", reflect.TypeOf(md[NodeField]))
