@@ -513,3 +513,13 @@ func (self *TryStatement) Idx1() file.Idx      { return self.Try }
 func (self *VariableStatement) Idx1() file.Idx { return self.List[len(self.List)-1].Idx1() }
 func (self *WhileStatement) Idx1() file.Idx    { return self.Body.Idx1() }
 func (self *WithStatement) Idx1() file.Idx     { return self.Body.Idx1() }
+
+//
+
+func (self *Identifier) GetName() string {
+	return self.Name
+}
+
+func (self *VariableExpression) GetName() string {
+	return self.Name
+}
