@@ -58,7 +58,7 @@ func ParentMetadata(metadata []Metadata) Metadata {
 }
 
 func FindParentStatement(metadata []Metadata) ast.Statement {
-	for i := len(metadata) - 1; i >= 0; i++ {
+	for i := len(metadata) - 1; i >= 0; i-- {
 		parent := metadata[i][NodeField]
 		statement, ok := parent.(ast.Statement)
 		if ok {
