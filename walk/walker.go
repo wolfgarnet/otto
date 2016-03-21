@@ -230,7 +230,7 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) Metadata {
 	case *ast.ObjectLiteral:
 		return w.Visitor.VisitObject(w, n, metadata)
 	case *ast.Program:
-		w.program = node
+		w.program = n
 		return w.Visitor.VisitProgram(w, n, metadata)
 	case *ast.ReturnStatement:
 		return w.Visitor.VisitReturn(w, n, metadata)
@@ -427,7 +427,9 @@ func (v *VisitorImpl) VisitFor(w *Walker, node *ast.ForStatement, metadata []Met
 }
 
 func (v *VisitorImpl) VisitFunction(w *Walker, node *ast.FunctionLiteral, metadata []Metadata) Metadata {
-	w.Walk(node.Name, metadata)
+	if node.Name != nil {
+		w.Walk(node.Name, metadata)
+	}
 	for _, value := range node.ParameterList.List {
 		w.Walk(value, metadata)
 	}
@@ -560,7 +562,9 @@ func (v *VisitorImpl) VisitUnary(w *Walker, node *ast.UnaryExpression, metadata 
 }
 
 func (v *VisitorImpl) VisitVariable(w *Walker, node *ast.VariableExpression, metadata []Metadata) Metadata {
-	w.Walk(node.Initializer, metadata)
+	if node.Initializer != nil {
+		w.Walk(node.Initializer, metadata)
+	}
 
 	return CurrentMetadata(metadata)
 }
