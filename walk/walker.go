@@ -21,7 +21,6 @@ type Walker struct {
 	Current, Parent ast.Node
 	CatchPanic      bool
 	program         *ast.Program
-	StartHook       func(visitor Visitor)
 }
 
 func NewWalker(visitor Visitor) *Walker {
@@ -117,9 +116,6 @@ func (w *Walker) Begin(node ast.Node) {
 				fmt.Printf("%s\n", debug.Stack())
 			}
 		}()
-	}
-	if w.StartHook != nil {
-		w.StartHook()
 	}
 	md := []Metadata{NewMetadata(nil)}
 	w.Walk(node, md)
