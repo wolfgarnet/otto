@@ -21,7 +21,7 @@ type Walker struct {
 	Current, Parent ast.Node
 	CatchPanic      bool
 	program         *ast.Program
-	StartHook       func()
+	StartHook       func(visitor Visitor)
 }
 
 func NewWalker(visitor Visitor) *Walker {
@@ -228,13 +228,13 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 		result = w.Visitor.VisitFor(w, n, metadata)
 	case *ast.FunctionLiteral:
 		for _, hook := range w.Visitor.getHooks() {
-			if hook != nil {
+			if hook.OnScopeEnter != nil {
 				hook.OnScopeEnter(n, metadata)
 			}
 		}
 		result = w.Visitor.VisitFunction(w, n, metadata)
 		for _, hook := range w.Visitor.getHooks() {
-			if hook != nil {
+			if hook.OnScopeLeave != nil {
 				hook.OnScopeLeave(n, metadata)
 			}
 		}
@@ -257,13 +257,13 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 	case *ast.Program:
 		w.program = n
 		for _, hook := range w.Visitor.getHooks() {
-			if hook != nil {
+			if hook.OnProgramStart != nil {
 				hook.OnProgramStart(n, metadata)
 			}
 		}
 		result = w.Visitor.VisitProgram(w, n, metadata)
 		for _, hook := range w.Visitor.getHooks() {
-			if hook != nil {
+			if hook.OnProgramEnd != nil {
 				hook.OnProgramEnd(n, metadata)
 			}
 		}
