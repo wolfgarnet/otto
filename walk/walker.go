@@ -251,7 +251,17 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 		result = w.Visitor.VisitObject(w, n, metadata)
 	case *ast.Program:
 		w.program = n
+		for _, hook := range w.Visitor.getHooks() {
+			if hook != nil {
+				hook.OnProgramStart(n, metadata)
+			}
+		}
 		result = w.Visitor.VisitProgram(w, n, metadata)
+		for _, hook := range w.Visitor.getHooks() {
+			if hook != nil {
+				hook.OnProgramEnd(n, metadata)
+			}
+		}
 	case *ast.ReturnStatement:
 		result = w.Visitor.VisitReturn(w, n, metadata)
 	case *ast.RegExpLiteral:
