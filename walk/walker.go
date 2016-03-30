@@ -7,6 +7,14 @@ import (
 	"runtime/debug"
 )
 
+type Hooks struct {
+	OnProgramStart func(node *ast.Program, metadata []Metadata) error
+	OnProgramEnd   func(node *ast.Program, metadata []Metadata) error
+
+	OnScopeEnter func(node *ast.FunctionLiteral, metadata []Metadata) error
+	OnScopeLeave func(node *ast.FunctionLiteral, metadata []Metadata) error
+}
+
 // Walker can walk a given AST with a visitor
 type Walker struct {
 	Visitor         Visitor
@@ -69,6 +77,8 @@ type Visitor interface {
 	VisitVariableStatement(walker *Walker, node *ast.VariableStatement, metadata []Metadata) Metadata
 	VisitWhile(walker *Walker, node *ast.WhileStatement, metadata []Metadata) Metadata
 	VisitWith(walker *Walker, node *ast.WithStatement, metadata []Metadata) Metadata
+
+	getHooks() []*Hooks
 }
 
 func (w *Walker) GetPosition(idx file.Idx) *file.Position {
@@ -150,7 +160,7 @@ func FindVariable(metadata []Metadata, name string) file.Idx {
 }
 
 // Walk the AST, including metadata
-func (w *Walker) Walk(node ast.Node, metadata []Metadata) Metadata {
+func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 	w.Current = node
 	w.Parent = ParentMetadata(metadata).Node()
 
@@ -170,101 +180,119 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) Metadata {
 
 	switch n := node.(type) {
 	case *ast.ArrayLiteral:
-		return w.Visitor.VisitArray(w, n, metadata)
+		result = w.Visitor.VisitArray(w, n, metadata)
 	case *ast.AssignExpression:
-		return w.Visitor.VisitAssign(w, n, metadata)
+		result = w.Visitor.VisitAssign(w, n, metadata)
 	case *ast.BadExpression:
-		return w.Visitor.VisitBad(w, n, metadata)
+		result = w.Visitor.VisitBad(w, n, metadata)
 	case *ast.BadStatement:
-		return w.Visitor.VisitBadStatement(w, n, metadata)
+		result = w.Visitor.VisitBadStatement(w, n, metadata)
 	case *ast.BinaryExpression:
-		return w.Visitor.VisitBinary(w, n, metadata)
+		result = w.Visitor.VisitBinary(w, n, metadata)
 	case *ast.BlockStatement:
-		return w.Visitor.VisitBlock(w, n, metadata)
+		result = w.Visitor.VisitBlock(w, n, metadata)
 	case *ast.BooleanLiteral:
-		return w.Visitor.VisitBoolean(w, n, metadata)
+		result = w.Visitor.VisitBoolean(w, n, metadata)
 	case *ast.BracketExpression:
-		return w.Visitor.VisitBracket(w, n, metadata)
+		result = w.Visitor.VisitBracket(w, n, metadata)
 	case *ast.BranchStatement:
-		return w.Visitor.VisitBranch(w, n, metadata)
+		result = w.Visitor.VisitBranch(w, n, metadata)
 	case *ast.CallExpression:
-		return w.Visitor.VisitCall(w, n, metadata)
+		result = w.Visitor.VisitCall(w, n, metadata)
 	case *ast.CaseStatement:
-		return w.Visitor.VisitCase(w, n, metadata)
+		result = w.Visitor.VisitCase(w, n, metadata)
 	case *ast.CatchStatement:
-		return w.Visitor.VisitCatch(w, n, metadata)
+		result = w.Visitor.VisitCatch(w, n, metadata)
 	case *ast.ConditionalExpression:
-		return w.Visitor.VisitConditional(w, n, metadata)
+		result = w.Visitor.VisitConditional(w, n, metadata)
 	case *ast.DebuggerStatement:
-		return w.Visitor.VisitDebugger(w, n, metadata)
+		result = w.Visitor.VisitDebugger(w, n, metadata)
 	case *ast.DotExpression:
-		return w.Visitor.VisitDot(w, n, metadata)
+		result = w.Visitor.VisitDot(w, n, metadata)
 	case *ast.DoWhileStatement:
-		return w.Visitor.VisitDoWhile(w, n, metadata)
+		result = w.Visitor.VisitDoWhile(w, n, metadata)
 	case *ast.EmptyExpression:
-		return w.Visitor.VisitEmpty(w, n, metadata)
+		result = w.Visitor.VisitEmpty(w, n, metadata)
 	case *ast.EmptyStatement:
-		return w.Visitor.VisitEmptyStatement(w, n, metadata)
+		result = w.Visitor.VisitEmptyStatement(w, n, metadata)
 	case *ast.ExpressionStatement:
-		return w.Visitor.VisitExpression(w, n, metadata)
+		result = w.Visitor.VisitExpression(w, n, metadata)
 	case *ast.ForInStatement:
-		return w.Visitor.VisitForIn(w, n, metadata)
+		result = w.Visitor.VisitForIn(w, n, metadata)
 	case *ast.ForStatement:
-		return w.Visitor.VisitFor(w, n, metadata)
+		result = w.Visitor.VisitFor(w, n, metadata)
 	case *ast.FunctionLiteral:
-		return w.Visitor.VisitFunction(w, n, metadata)
+		for _, hook := range w.Visitor.getHooks() {
+			if hook != nil {
+				hook.OnScopeEnter(n, metadata)
+			}
+		}
+		result = w.Visitor.VisitFunction(w, n, metadata)
+		for _, hook := range w.Visitor.getHooks() {
+			if hook != nil {
+				hook.OnScopeLeave(n, metadata)
+			}
+		}
 	case *ast.FunctionStatement:
-		return w.Visitor.VisitFunctionStatement(w, n, metadata)
+		result = w.Visitor.VisitFunctionStatement(w, n, metadata)
 	case *ast.Identifier:
-		return w.Visitor.VisitIdentifier(w, n, metadata)
+		result = w.Visitor.VisitIdentifier(w, n, metadata)
 	case *ast.IfStatement:
-		return w.Visitor.VisitIf(w, n, metadata)
+		result = w.Visitor.VisitIf(w, n, metadata)
 	case *ast.LabelledStatement:
-		return w.Visitor.VisitLabelled(w, n, metadata)
+		result = w.Visitor.VisitLabelled(w, n, metadata)
 	case *ast.NewExpression:
-		return w.Visitor.VisitNew(w, n, metadata)
+		result = w.Visitor.VisitNew(w, n, metadata)
 	case *ast.NullLiteral:
-		return w.Visitor.VisitNull(w, n, metadata)
+		result = w.Visitor.VisitNull(w, n, metadata)
 	case *ast.NumberLiteral:
-		return w.Visitor.VisitNumber(w, n, metadata)
+		result = w.Visitor.VisitNumber(w, n, metadata)
 	case *ast.ObjectLiteral:
-		return w.Visitor.VisitObject(w, n, metadata)
+		result = w.Visitor.VisitObject(w, n, metadata)
 	case *ast.Program:
 		w.program = n
-		return w.Visitor.VisitProgram(w, n, metadata)
+		result = w.Visitor.VisitProgram(w, n, metadata)
 	case *ast.ReturnStatement:
-		return w.Visitor.VisitReturn(w, n, metadata)
+		result = w.Visitor.VisitReturn(w, n, metadata)
 	case *ast.RegExpLiteral:
-		return w.Visitor.VisitRegex(w, n, metadata)
+		result = w.Visitor.VisitRegex(w, n, metadata)
 	case *ast.SequenceExpression:
-		return w.Visitor.VisitSequence(w, n, metadata)
+		result = w.Visitor.VisitSequence(w, n, metadata)
 	case *ast.StringLiteral:
-		return w.Visitor.VisitString(w, n, metadata)
+		result = w.Visitor.VisitString(w, n, metadata)
 	case *ast.SwitchStatement:
-		return w.Visitor.VisitSwitch(w, n, metadata)
+		result = w.Visitor.VisitSwitch(w, n, metadata)
 	case *ast.ThisExpression:
-		return w.Visitor.VisitThis(w, n, metadata)
+		result = w.Visitor.VisitThis(w, n, metadata)
 	case *ast.ThrowStatement:
-		return w.Visitor.VisitThrow(w, n, metadata)
+		result = w.Visitor.VisitThrow(w, n, metadata)
 	case *ast.TryStatement:
-		return w.Visitor.VisitTry(w, n, metadata)
+		result = w.Visitor.VisitTry(w, n, metadata)
 	case *ast.UnaryExpression:
-		return w.Visitor.VisitUnary(w, n, metadata)
+		result = w.Visitor.VisitUnary(w, n, metadata)
 	case *ast.VariableExpression:
-		return w.Visitor.VisitVariable(w, n, metadata)
+		result = w.Visitor.VisitVariable(w, n, metadata)
 	case *ast.VariableStatement:
-		return w.Visitor.VisitVariableStatement(w, n, metadata)
+		result = w.Visitor.VisitVariableStatement(w, n, metadata)
 	case *ast.WhileStatement:
-		return w.Visitor.VisitWhile(w, n, metadata)
+		result = w.Visitor.VisitWhile(w, n, metadata)
 	case *ast.WithStatement:
-		return w.Visitor.VisitWith(w, n, metadata)
+		result = w.Visitor.VisitWith(w, n, metadata)
+	default:
+		result = nil
 	}
 
-	return nil
+	return
 }
 
 // VisitorImpl is a default implementation of the Visitor interface
 type VisitorImpl struct {
+	Hooks []*Hooks
+}
+
+// getHooks returns the hooks for this visitor
+func (v *VisitorImpl) getHooks() []*Hooks {
+	return v.Hooks
 }
 
 func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Metadata) Metadata {
