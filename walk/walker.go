@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 )
 
-type Hooks struct {
+type Hook struct {
 	OnProgramStart func(node *ast.Program, metadata []Metadata) error
 	OnProgramEnd   func(node *ast.Program, metadata []Metadata) error
 
@@ -78,7 +78,8 @@ type Visitor interface {
 	VisitWhile(walker *Walker, node *ast.WhileStatement, metadata []Metadata) Metadata
 	VisitWith(walker *Walker, node *ast.WithStatement, metadata []Metadata) Metadata
 
-	getHooks() []*Hooks
+	getHooks() []*Hook
+	AddHook(hook *Hook)
 }
 
 func (w *Walker) GetPosition(idx file.Idx) *file.Position {
@@ -297,12 +298,16 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 
 // VisitorImpl is a default implementation of the Visitor interface
 type VisitorImpl struct {
-	Hooks []*Hooks
+	Hooks []*Hook
 }
 
 // getHooks returns the hooks for this visitor
-func (v *VisitorImpl) getHooks() []*Hooks {
+func (v *VisitorImpl) getHooks() []*Hook {
 	return v.Hooks
+}
+
+func (v *VisitorImpl) AddHook(hook *Hook) {
+	v.Hooks = append(v.Hooks, hook)
 }
 
 func (v *VisitorImpl) VisitProgram(w *Walker, node *ast.Program, metadata []Metadata) Metadata {
