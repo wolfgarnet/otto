@@ -130,8 +130,8 @@ func (self *_parser) parseRegExpLiteral() *ast.RegExpLiteral {
 	if self.token == token.IDENTIFIER { // gim
 
 		flags = self.literal
+		endOffset = self.chrOffset + len(self.literal) - 1
 		self.next()
-		endOffset = self.chrOffset - 1
 	}
 
 	var value string
