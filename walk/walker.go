@@ -381,7 +381,9 @@ func (v *VisitorImpl) VisitBracket(w *Walker, node *ast.BracketExpression, metad
 
 func (v *VisitorImpl) VisitBranch(w *Walker, node *ast.BranchStatement, metadata []Metadata) Metadata {
 	if node.Label != nil {
-		w.Walk(node.Label, metadata)
+		if node.Label != nil {
+			w.Walk(node.Label, metadata)
+		}
 	}
 
 	return CurrentMetadata(metadata)
@@ -397,9 +399,13 @@ func (v *VisitorImpl) VisitCall(w *Walker, node *ast.CallExpression, metadata []
 }
 
 func (v *VisitorImpl) VisitCase(w *Walker, node *ast.CaseStatement, metadata []Metadata) Metadata {
-	w.Walk(node.Test, metadata)
+	if node.Test != nil {
+		w.Walk(node.Test, metadata)
+	}
 	for _, e := range node.Consequent {
-		w.Walk(e, metadata)
+		if e != nil {
+			w.Walk(e, metadata)
+		}
 	}
 
 	return CurrentMetadata(metadata)
@@ -461,9 +467,15 @@ func (v *VisitorImpl) VisitForIn(w *Walker, node *ast.ForInStatement, metadata [
 }
 
 func (v *VisitorImpl) VisitFor(w *Walker, node *ast.ForStatement, metadata []Metadata) Metadata {
-	w.Walk(node.Initializer, metadata)
-	w.Walk(node.Test, metadata)
-	w.Walk(node.Update, metadata)
+	if node.Initializer != nil {
+		w.Walk(node.Initializer, metadata)
+	}
+	if node.Test != nil {
+		w.Walk(node.Test, metadata)
+	}
+	if node.Update != nil {
+		w.Walk(node.Update, metadata)
+	}
 	w.Walk(node.Body, metadata)
 
 	return CurrentMetadata(metadata)
@@ -509,7 +521,9 @@ func (v *VisitorImpl) VisitIdentifier(w *Walker, node *ast.Identifier, metadata 
 func (v *VisitorImpl) VisitIf(w *Walker, node *ast.IfStatement, metadata []Metadata) Metadata {
 	w.Walk(node.Test, metadata)
 	w.Walk(node.Consequent, metadata)
-	w.Walk(node.Alternate, metadata)
+	if node.Alternate != nil {
+		w.Walk(node.Alternate, metadata)
+	}
 
 	return CurrentMetadata(metadata)
 }
@@ -546,7 +560,9 @@ func (v *VisitorImpl) VisitObject(w *Walker, node *ast.ObjectLiteral, metadata [
 }
 
 func (v *VisitorImpl) VisitReturn(w *Walker, node *ast.ReturnStatement, metadata []Metadata) Metadata {
-	w.Walk(node.Argument, metadata)
+	if node.Argument != nil {
+		w.Walk(node.Argument, metadata)
+	}
 
 	return CurrentMetadata(metadata)
 }
@@ -556,8 +572,10 @@ func (v *VisitorImpl) VisitRegex(w *Walker, node *ast.RegExpLiteral, metadata []
 }
 
 func (v *VisitorImpl) VisitSequence(w *Walker, node *ast.SequenceExpression, metadata []Metadata) Metadata {
-	for _, e := range node.Sequence {
-		w.Walk(e, metadata)
+	if node.Sequence != nil {
+		for _, e := range node.Sequence {
+			w.Walk(e, metadata)
+		}
 	}
 
 	return CurrentMetadata(metadata)
@@ -570,7 +588,9 @@ func (v *VisitorImpl) VisitString(w *Walker, node *ast.StringLiteral, metadata [
 func (v *VisitorImpl) VisitSwitch(w *Walker, node *ast.SwitchStatement, metadata []Metadata) Metadata {
 	w.Walk(node.Discriminant, metadata)
 	for _, e := range node.Body {
-		w.Walk(e, metadata)
+		if e != nil {
+			w.Walk(e, metadata)
+		}
 	}
 
 	return CurrentMetadata(metadata)
