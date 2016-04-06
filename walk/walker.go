@@ -13,6 +13,8 @@ type Hook struct {
 
 	OnScopeEnter func(node *ast.FunctionLiteral, metadata []Metadata) error
 	OnScopeLeave func(node *ast.FunctionLiteral, metadata []Metadata) error
+
+	OnNode func(node ast.Node, metadata []Metadata) error
 }
 
 // Walker can walk a given AST with a visitor
@@ -178,6 +180,12 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 
 	// Append the node
 	metadata = append(metadata, md)
+
+	for _, hook := range w.Visitor.getHooks() {
+		if hook.OnNode != nil {
+			hook.OnNode(node, metadata)
+		}
+	}
 
 	switch n := node.(type) {
 	case *ast.ArrayLiteral:
