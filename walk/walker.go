@@ -14,7 +14,8 @@ type Hook struct {
 	OnScopeEnter func(node *ast.FunctionLiteral, metadata []Metadata) error
 	OnScopeLeave func(node *ast.FunctionLiteral, metadata []Metadata) error
 
-	OnNode func(node ast.Node, metadata []Metadata) error
+	OnNode      func(node ast.Node, metadata []Metadata) error
+	OnNodeLeave func(node ast.Node, metadata []Metadata) error
 }
 
 // Walker can walk a given AST with a visitor
@@ -299,6 +300,12 @@ func (w *Walker) Walk(node ast.Node, metadata []Metadata) (result Metadata) {
 		result = w.Visitor.VisitWith(w, n, metadata)
 	default:
 		result = nil
+	}
+
+	for _, hook := range w.Visitor.getHooks() {
+		if hook.OnNodeLeave != nil {
+			hook.OnNodeLeave(node, metadata)
+		}
 	}
 
 	return
