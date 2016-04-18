@@ -40,7 +40,7 @@ func TestWalker(t *testing.T) {
 		}
 
 		visitor := &testVisitor{}
-		walker := Walker{visitor}
+		walker := NewWalker(visitor)
 		walker.Begin(program)
 
 		if test.size != len(visitor.ancestors) {
