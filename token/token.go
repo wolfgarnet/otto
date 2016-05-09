@@ -68,6 +68,12 @@ func (tkn Token) Precedence(in bool) int {
 
 	case MULTIPLY, SLASH, REMAINDER, MULTIPLY_ASSIGN, QUOTIENT_ASSIGN, REMAINDER_ASSIGN:
 		return 11
+
+	case NOT:
+		return 15
+
+	case PERIOD:
+		return 18
 	}
 	return 0
 }
