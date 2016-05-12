@@ -72,6 +72,12 @@ func (tkn Token) Precedence(in bool) int {
 	case NOT:
 		return 15
 
+	case LEFT_PARENTHESIS, RIGHT_PARENTHESIS:
+		fallthrough
+
+	case LEFT_BRACKET, RIGHT_BRACKET:
+		fallthrough
+
 	case PERIOD:
 		return 18
 	}
