@@ -309,6 +309,13 @@ type (
 		Switch       file.Idx
 		Discriminant Expression
 		Default      int
+		Body         []*CaseStatement
+	}
+
+	SwitchStatement2 struct {
+		Switch       file.Idx
+		Discriminant Expression
+		Default      int
 		Body         []*CaseStatement2
 	}
 
@@ -361,6 +368,7 @@ func (*IfStatement) _statementNode()         {}
 func (*LabelledStatement) _statementNode()   {}
 func (*ReturnStatement) _statementNode()     {}
 func (*SwitchStatement) _statementNode()     {}
+func (*SwitchStatement2) _statementNode()    {}
 func (*ThrowStatement) _statementNode()      {}
 func (*TryStatement) _statementNode()        {}
 func (*VariableStatement) _statementNode()   {}
@@ -468,6 +476,7 @@ func (self *Program) Idx0() file.Idx             { return self.Body[0].Idx0() }
 func (self *Program2) Idx0() file.Idx            { return self.Body.Idx0() }
 func (self *ReturnStatement) Idx0() file.Idx     { return self.Return }
 func (self *SwitchStatement) Idx0() file.Idx     { return self.Switch }
+func (self *SwitchStatement2) Idx0() file.Idx    { return self.Switch }
 func (self *ThrowStatement) Idx0() file.Idx      { return self.Throw }
 func (self *TryStatement) Idx0() file.Idx        { return self.Try }
 func (self *VariableStatement) Idx0() file.Idx   { return self.Var }
@@ -553,6 +562,7 @@ func (self *Program) Idx1() file.Idx           { return self.Body[len(self.Body)
 func (self *Program2) Idx1() file.Idx          { return self.Body.Idx1() }
 func (self *ReturnStatement) Idx1() file.Idx   { return self.Return }
 func (self *SwitchStatement) Idx1() file.Idx   { return self.Body[len(self.Body)-1].Idx1() }
+func (self *SwitchStatement2) Idx1() file.Idx  { return self.Body[len(self.Body)-1].Idx1() }
 func (self *ThrowStatement) Idx1() file.Idx    { return self.Throw }
 func (self *TryStatement) Idx1() file.Idx      { return self.Try }
 func (self *VariableStatement) Idx1() file.Idx { return self.List[len(self.List)-1].Idx1() }
