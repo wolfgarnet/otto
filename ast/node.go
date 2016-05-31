@@ -238,6 +238,12 @@ type (
 		Consequent []Statement
 	}
 
+	CaseStatement2 struct {
+		Case       file.Idx
+		Test       Expression
+		Consequent Statement
+	}
+
 	CatchStatement struct {
 		Catch     file.Idx
 		Parameter *Identifier
@@ -303,7 +309,7 @@ type (
 		Switch       file.Idx
 		Discriminant Expression
 		Default      int
-		Body         []*CaseStatement
+		Body         []*CaseStatement2
 	}
 
 	ThrowStatement struct {
@@ -342,6 +348,7 @@ func (*BadStatement) _statementNode()        {}
 func (*BlockStatement) _statementNode()      {}
 func (*BranchStatement) _statementNode()     {}
 func (*CaseStatement) _statementNode()       {}
+func (*CaseStatement2) _statementNode()      {}
 func (*CatchStatement) _statementNode()      {}
 func (*DebuggerStatement) _statementNode()   {}
 func (*DoWhileStatement) _statementNode()    {}
@@ -399,6 +406,16 @@ type Program struct {
 	Comments CommentMap
 }
 
+type Program2 struct {
+	Body Statement
+
+	DeclarationList []Declaration
+
+	File *file.File
+
+	Comments CommentMap
+}
+
 // ==== //
 // Idx0 //
 // ==== //
@@ -436,6 +453,7 @@ func (self *BadStatement) Idx0() file.Idx        { return self.From }
 func (self *BlockStatement) Idx0() file.Idx      { return self.LeftBrace }
 func (self *BranchStatement) Idx0() file.Idx     { return self.Idx }
 func (self *CaseStatement) Idx0() file.Idx       { return self.Case }
+func (self *CaseStatement2) Idx0() file.Idx      { return self.Case }
 func (self *CatchStatement) Idx0() file.Idx      { return self.Catch }
 func (self *DebuggerStatement) Idx0() file.Idx   { return self.Debugger }
 func (self *DoWhileStatement) Idx0() file.Idx    { return self.Do }
@@ -447,6 +465,7 @@ func (self *FunctionStatement) Idx0() file.Idx   { return self.Function.Idx0() }
 func (self *IfStatement) Idx0() file.Idx         { return self.If }
 func (self *LabelledStatement) Idx0() file.Idx   { return self.Label.Idx0() }
 func (self *Program) Idx0() file.Idx             { return self.Body[0].Idx0() }
+func (self *Program2) Idx0() file.Idx            { return self.Body.Idx0() }
 func (self *ReturnStatement) Idx0() file.Idx     { return self.Return }
 func (self *SwitchStatement) Idx0() file.Idx     { return self.Switch }
 func (self *ThrowStatement) Idx0() file.Idx      { return self.Throw }
@@ -508,6 +527,13 @@ func (self *CaseStatement) Idx1() file.Idx {
 		return self.Test.Idx1()
 	}
 }
+func (self *CaseStatement2) Idx1() file.Idx {
+	if self.Consequent != nil {
+		return self.Consequent.Idx1()
+	} else {
+		return self.Test.Idx1()
+	}
+}
 func (self *CatchStatement) Idx1() file.Idx      { return self.Body.Idx1() }
 func (self *DebuggerStatement) Idx1() file.Idx   { return self.Debugger + 8 }
 func (self *DoWhileStatement) Idx1() file.Idx    { return self.Test.Idx1() }
@@ -524,6 +550,7 @@ func (self *IfStatement) Idx1() file.Idx {
 }
 func (self *LabelledStatement) Idx1() file.Idx { return self.Colon + 1 }
 func (self *Program) Idx1() file.Idx           { return self.Body[len(self.Body)-1].Idx1() }
+func (self *Program2) Idx1() file.Idx          { return self.Body.Idx1() }
 func (self *ReturnStatement) Idx1() file.Idx   { return self.Return }
 func (self *SwitchStatement) Idx1() file.Idx   { return self.Body[len(self.Body)-1].Idx1() }
 func (self *ThrowStatement) Idx1() file.Idx    { return self.Throw }
